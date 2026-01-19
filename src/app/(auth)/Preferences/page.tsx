@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Plus, Home } from "lucide-react";
@@ -73,15 +73,17 @@ const WelcomeModal = ({ isVisible, onClaimDeals, onGoHome }) => {
 };
 
 // ---------------------------------------------
-// MAIN PAGE COMPONENT
+// INNER COMPONENT (ALL LOGIC MOVED HERE)
 // ---------------------------------------------
-export default function PreferencesPage() {
+function PreferencesContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
   // --- Google redirect logic ---
   useEffect(() => {
     const userParam = searchParams.get("user");
@@ -117,77 +119,46 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
     router.push("/");
   };
 
-  // --- NEW: Save preferences to backend ---
   const handleContinue = async () => {
-    if (selectedCategories.length === 0) return;
+    if (!selectedCategories.length) return;
 
-    // --- ENHANCED USER RETRIEVAL ---
     let user = null;
     try {
       const rawData = localStorage.getItem("user");
-
       if (!rawData) {
-        console.error("❌ localStorage key 'user' is completely empty");
         alert("Session missing. Please log in again.");
         return;
       }
-
-      // Parse the data
       user = JSON.parse(rawData);
-
-      // FIX: If the data was "double-stringified" (common in Google Redirects),
-      // user will be a string instead of an object. We parse again if so.
-      if (typeof user === "string") {
-        user = JSON.parse(user);
-      }
+      if (typeof user === "string") user = JSON.parse(user);
     } catch (error) {
-      console.error("❌ Error parsing user from localStorage:", error);
+      console.error("❌ Error parsing user:", error);
     }
 
-    // Verify _id exists after cleaning the data
     const userId = user?._id || user?.id;
-
     if (!userId) {
-      console.error(
-        "❌ No user ID found in localStorage. Data found was:",
-        user,
-      );
-      alert(
-        "Could not verify your User ID. Please try logging out and back in.",
-      );
+      alert("Could not verify your User ID. Please log out and log in again.");
       return;
     }
-    // --- END ENHANCED USER RETRIEVAL ---
 
     setIsSaving(true);
 
     try {
-      const res = await fetch(
-        `${baseURL}/users/${userId}/preferences`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            // Suggestion: If you have a token in localStorage, add it here:
-            // "Authorization": `Bearer ${localStorage.getItem("token")}`
-          },
-          body: JSON.stringify({ preferences: selectedCategories }),
-        },
-      );
+      const res = await fetch(`${baseURL}/users/${userId}/preferences`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ preferences: selectedCategories }),
+      });
 
       const data = await res.json();
-
       if (!res.ok) {
-        console.error("❌ Failed to save preferences:", data.message);
-        alert(`Error: ${data.message || "Failed to save preferences"}`);
+        alert(data.message || "Failed to save preferences");
         return;
       }
 
-      console.log("✅ Preferences saved successfully for user:", userId);
-      setIsModalVisible(true); // Show welcome modal
+      setIsModalVisible(true);
     } catch (error) {
-      console.error("❌ Error saving preferences:", error);
-      alert("Network error: Could not connect to the server.");
+      alert("Network error: Could not connect to server");
     } finally {
       setIsSaving(false);
     }
@@ -242,8 +213,7 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
               Tell us what you like!
             </h1>
             <p className="text-sm text-gray-500">
-              Pick the products and deals that interest you to get a
-              personalized shopping feed.
+              Pick the products and deals that interest you to get a personalized shopping feed.
             </p>
           </div>
         </div>
@@ -255,7 +225,11 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
               <button
                 key={category}
                 onClick={() => toggleCategory(category)}
-                className={`flex items-center px-4 py-2 border rounded-lg transition-colors duration-150 ${isSelected ? "bg-green-50 text-green-700 border-green-700 font-bold" : "bg-gray-50 text-gray-500 border-gray-300 hover:border-gray-500"}`}
+                className={`flex items-center px-4 py-2 border rounded-lg transition-colors duration-150 ${
+                  isSelected
+                    ? "bg-green-50 text-green-700 border-green-700 font-bold"
+                    : "bg-gray-50 text-gray-500 border-gray-300 hover:border-gray-500"
+                }`}
               >
                 {isSelected ? (
                   <Image
@@ -285,7 +259,9 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
           <button
             onClick={handleContinue}
             disabled={!isContinueEnabled}
-            className={`flex-1 py-3 px-6 rounded-lg font-bold transition-colors duration-150 ${isContinueEnabled ? "bg-blue-600 text-white hover:bg-blue-700 shadow-md" : "bg-gray-300 text-gray-600 cursor-not-allowed"}`}
+            className={`flex-1 py-3 px-6 rounded-lg font-bold transition-colors duration-150 ${
+              isContinueEnabled ? "bg-blue-600 text-white hover:bg-blue-700 shadow-md" : "bg-gray-300 text-gray-600 cursor-not-allowed"
+            }`}
           >
             {isSaving ? "Saving..." : "Continue to deals"}
           </button>
@@ -298,5 +274,16 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
         onGoHome={handleGoHome}
       />
     </div>
+  );
+}
+
+// ---------------------------------------------
+// PAGE EXPORT WITH SUSPENSE
+// ---------------------------------------------
+export default function PreferencesPageWrapper() {
+  return (
+    <Suspense fallback={<div className="h-screen flex items-center justify-center">Loading…</div>}>
+      <PreferencesContent />
+    </Suspense>
   );
 }

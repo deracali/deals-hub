@@ -9,16 +9,17 @@ import { ChevronRight } from "lucide-react";
 import Icon from "@/components/ui/icon";
 import LimitedTimeDeals from "../../home/limited-time-deals";
 import ProductCard from "../../home/product";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react"; // Added Suspense import
 import { useSearchParams, useRouter } from "next/navigation";
 
-const MarketingHomePage = () => {
+// 1. We keep your entire component exactly as it is, but rename it to 'Content'
+const MarketingHomeContent = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
-  const [trendingProducts, setTrendingProducts] = useState<Product[]>([]);
+  const [trendingProducts, setTrendingProducts] = useState<any[]>([]);
   const [availableCoupons, setAvailableCoupons] = useState<any[]>([]);
   const [curatedCategories, setCuratedCategories] = useState<any[]>([]);
-const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
+  const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -48,7 +49,6 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
         const data = await res.json();
 
         if (data.success && Array.isArray(data.data)) {
-          // Map DB fields to match your UI needs
           const mappedCoupons = data.data.map((coupon: any) => ({
             id: coupon._id,
             title: coupon.title,
@@ -73,7 +73,7 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
     };
 
     fetchCoupons();
-  }, []);
+  }, [baseURL]);
 
   // Fetch trending products from API and sort by likes
   useEffect(() => {
@@ -89,9 +89,8 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
           return;
         }
 
-        // ✅ FILTER ONLY ACTIVE DEALS
         const activeDeals = data.deals.filter(
-          (deal: any) => deal.status === "active",
+          (deal: any) => deal.status === "active"
         );
 
         console.log("🟢 Active deals only:", activeDeals);
@@ -119,10 +118,8 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
           };
         });
 
-        // Sort by discount descending
         const trending = mappedDeals.sort((a, b) => b.discount - a.discount);
 
-        // Filter deals with 50%+ discount and limit to 4
         const trending50Plus = trending
           .filter((deal) => deal.discount >= 50)
           .slice(0, 4);
@@ -142,13 +139,13 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
     const fetchCuratedCategories = async () => {
       try {
         const res = await fetch(
-          "http://localhost:5000/api/curated-categories/get",
+          "http://localhost:5000/api/curated-categories/get"
         );
         const data = await res.json();
 
         if (data.success && Array.isArray(data.categories)) {
           const mappedCategories = data.categories.map((cat: any) => ({
-            id: cat._id, // use MongoDB _id
+            id: cat._id,
             title: cat.title,
             description: cat.description,
             image: cat.image,
@@ -171,7 +168,6 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
   }, []);
 
   useEffect(() => {
-    // Simulate loading
     const timer = setTimeout(() => setLoading(false), 1000);
     return () => clearTimeout(timer);
   }, []);
@@ -194,11 +190,8 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
       <Header />
       <HeroSection />
       <section className="py-12 bg-muted/10">
-        {/* Full-width red background */}
-
         <div className="w-full bg-red-600 text-white py-4 mb-6">
           <div className="container mx-auto px-4 space-y-1">
-            {/* Row 1 */}
             <div className="flex items-center justify-between whitespace-nowrap">
               <h2 className="text-base md:text-2xl font-bold">
                 Limited Time Deals
@@ -213,7 +206,6 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
               </a>
             </div>
 
-            {/* Row 2 */}
             <p className="text-xs md:text-sm font-semibold opacity-90 whitespace-nowrap">
               Valid until:
               <span className="font-bold ml-1">2D : 12h : 23m : 56s</span>
@@ -221,7 +213,6 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
           </div>
         </div>
 
-        {/* EXACT SAME WIDTH AS RED HEADER */}
         <div className="w-full px-0 sm:px-10 mx-auto">
           <LimitedTimeDeals />
         </div>
@@ -231,4 +222,15 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
   );
 };
 
-export default MarketingHomePage;
+// 2. Wrap the whole thing in Suspense to fix the Next.js build error
+export default function MarketingHomePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    }>
+      <MarketingHomeContent />
+    </Suspense>
+  );
+}
