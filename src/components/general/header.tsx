@@ -511,31 +511,33 @@ const Header = () => {
   <div className="md:hidden fixed inset-0 top-[72px] z-40 bg-white flex flex-col">
 
     {/* 1. AUTHENTICATION SECTION (TOP OF MENU) */}
-    <div className="px-6 py-8 border-b bg-gray-50">
-      {!isAuthenticated ? (
-        <div className="flex flex-col gap-4">
-          <div className="space-y-1">
-            <h3 className="text-lg font-bold text-gray-900">Welcome to Slyce</h3>
-            <p className="text-sm text-gray-500">Join our community to start saving.</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link
-              href="/login"
-              onClick={() => setIsMenuOpen(false)}
-              className="flex-1 py-3 text-center border-2 border-[#0d9cff] text-[#0d9cff] font-bold rounded-xl text-sm"
-            >
-              Log in
-            </Link>
-            <Link
-              href="/join"
-              onClick={() => setIsMenuOpen(false)}
-              className="flex-1 py-3 text-center bg-[#0d9cff] text-white font-bold rounded-xl text-sm shadow-md"
-            >
-              Register +
-            </Link>
-          </div>
+    {/* 1. AUTHENTICATION SECTION (TOP OF MENU) */}
+  <div className="px-6 py-8 border-b bg-gray-50">
+    {!isAuthenticated ? (
+      <div className="flex flex-col gap-4">
+        <div className="space-y-1">
+          <h3 className="text-lg font-bold text-gray-900">Welcome to Slyce</h3>
+          <p className="text-sm text-gray-500">Join our community to start saving.</p>
         </div>
-      ) : (
+        <div className="flex items-center gap-3">
+          <Link
+            href="/login"
+            onClick={() => setIsMenuOpen(false)}
+            className="flex-1 py-3 text-center border-2 border-[#0d9cff] text-[#0d9cff] font-bold rounded-xl text-sm"
+          >
+            Log in
+          </Link>
+          <Link
+            href="/join"
+            onClick={() => setIsMenuOpen(false)}
+            className="flex-1 py-3 text-center bg-[#0d9cff] text-white font-bold rounded-xl text-sm shadow-md"
+          >
+            Register +
+          </Link>
+        </div>
+      </div>
+    ) : (
+      <div className="flex flex-col gap-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             {/* Profile Image Part */}
@@ -556,6 +558,7 @@ const Header = () => {
               <p className="text-xs text-gray-500">Lagos, Nigeria</p>
             </div>
           </div>
+
           {/* Logout Button */}
           <button
             onClick={handleLogout}
@@ -564,8 +567,49 @@ const Header = () => {
             <LogOut size={20} />
           </button>
         </div>
-      )}
-    </div>
+
+        {/* NEW: Mobile Cart and Saved Deals (Large Screen Style) */}
+        <div className="flex items-center gap-4">
+          <Link
+            href="/"
+            onClick={() => setIsMenuOpen(false)}
+            className="w-12 h-12 rounded-full bg-[#5EB3FD] flex items-center justify-center relative shadow-sm"
+          >
+            <Image
+              src="/ChatCircleText.png"
+              alt="Saved"
+              width={22}
+              height={22}
+            />
+            {savedDealsCount > 0 && (
+              <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] text-[10px] font-bold text-white bg-[#FE811D] rounded-full flex items-center justify-center border-2 border-white">
+                {savedDealsCount}
+              </span>
+            )}
+          </Link>
+
+          <Link
+            href="/deals/cart"
+            onClick={() => setIsMenuOpen(false)}
+            className="w-12 h-12 rounded-full bg-[#5EB3FD] flex items-center justify-center relative shadow-sm"
+          >
+            <Image
+              src="/Handbag.png"
+              alt="Cart"
+              width={22}
+              height={22}
+            />
+            {cartBadgeCount > 0 && (
+              <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] text-[10px] font-bold text-white bg-[#FE811D] rounded-full flex items-center justify-center border-2 border-white">
+                {cartBadgeCount}
+              </span>
+            )}
+          </Link>
+          <span className="text-sm font-medium text-gray-500 ml-auto">Quick Access</span>
+        </div>
+      </div>
+    )}
+  </div>
 
     {/* 2. PROFILE QUICK LINKS (Only if logged in) */}
     {isAuthenticated && (
