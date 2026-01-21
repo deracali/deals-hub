@@ -653,31 +653,31 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
                     </div>
 
                     <div className="flex items-center gap-2">
-    {post.type === "scam-report" && (
-      <span className="bg-red-50 text-red-500 text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full flex items-center gap-1 border border-red-100">
-        <AlertTriangle className="w-3 h-3" /> Scam 
-      </span>
-    )}
+                      {post.type === "scam-report" && (
+                        <span className="bg-red-50 text-red-500 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 border border-red-100">
+                          <AlertTriangle className="w-3 h-3" /> Scam Report
+                        </span>
+                      )}
 
-    {post.type === "question" && (
-      <span className="bg-green-50 text-green-600 text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full flex items-center gap-1">
-        <HelpCircle className="w-3 h-3" /> Question
-      </span>
-    )}
+                      {post.type === "question" && (
+                        <span className="bg-green-50 text-green-600 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1">
+                          <HelpCircle className="w-3 h-3" /> Question
+                        </span>
+                      )}
 
-    {post.type === "general" && (
-      <span className="bg-blue-50 text-blue-600 text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full flex items-center gap-1">
-        <MessageSquare className="w-3 h-3" /> Discussion
-      </span>
-    )}
+                      {post.type === "general" && (
+                        <span className="bg-blue-50 text-blue-600 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1">
+                          <MessageSquare className="w-3 h-3" /> General
+                          Discussion
+                        </span>
+                      )}
 
-    {post.type === "deal-discussion" && (
-      <span className="bg-orange-50 text-orange-600 text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full flex items-center gap-1">
-        <Tag className="w-3 h-3" /> Deal
-      </span>
-    )}
-  </div>
-
+                      {post.type === "deal-discussion" && (
+                        <span className="bg-orange-50 text-orange-600 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1">
+                          <Tag className="w-3 h-3" /> Deal Discussion
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   {/* Title & Content */}
@@ -687,11 +687,9 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
                         {post.title}
                       </h2>
                     </Link>
-                    <Link href={`/forum/${post.id}`}>
                     <p className="text-gray-600 text-sm leading-relaxed mb-3">
                       {renderContentWithHashtags(post.content)}
                     </p>
-                    </Link>
 
                     {/* Inline Tags */}
                     {post.tags.length > 0 && (

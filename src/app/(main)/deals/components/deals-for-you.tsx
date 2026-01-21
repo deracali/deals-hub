@@ -14,6 +14,7 @@ import { useRef, useState, useEffect } from "react";
 
 export default function DealsForYou() {
   const scrollRef = useRef(null);
+  const [brandPhotos, setBrandPhotos] = useState({});
   const [favorites, setFavorites] = useState(new Set());
   const [deals, setDeals] = useState([
     // initial static fallback so UI isn't empty while fetching
@@ -61,25 +62,27 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
   };
 
   const filterDealsForUser = (dealsArr = [], preferences = []) => {
-    if (!Array.isArray(preferences) || preferences.length === 0)
-      return dealsArr;
-    const lowerPrefs = preferences.map((p) => String(p).toLowerCase());
-    return dealsArr.filter((deal) => {
-      const title = String(deal.title || "").toLowerCase();
-      const category = String(deal.category || "").toLowerCase();
+    if (!Array.isArray(preferences) || preferences.length === 0) return [];
+
+    const lowerPrefs = preferences.map(p => String(p).toLowerCase());
+
+    return dealsArr.filter(deal => {
+      const title = (deal.title || "").toLowerCase();
+      const category = (deal.category || "").toLowerCase();
+      const brand = (deal.brand || "").toLowerCase();
       const tags = Array.isArray(deal.tags)
-        ? deal.tags.map((t) => String(t).toLowerCase())
+        ? deal.tags.map(t => String(t).toLowerCase())
         : [];
 
-      const titleMatch = lowerPrefs.some((pref) => title.includes(pref));
-      const categoryMatch = lowerPrefs.some((pref) => category.includes(pref));
-      const tagsMatch = lowerPrefs.some((pref) =>
-        tags.some((t) => t.includes(pref)),
+      return lowerPrefs.some(pref =>
+        title.includes(pref) ||
+        category.includes(pref) ||
+        brand.includes(pref) ||
+        tags.some(tag => tag.includes(pref))
       );
-
-      return titleMatch || categoryMatch || tagsMatch;
     });
   };
+
 
   const getUserPreferencesFromStorage = () => {
     try {
@@ -91,6 +94,39 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
       return [];
     }
   };
+
+
+
+  useEffect(() => {
+  const fetchBrandPhotos = async () => {
+    const uniqueBrands = [...new Set(deals.map(d => d.brand).filter(Boolean))];
+
+    const map = {};
+
+    await Promise.all(
+      uniqueBrands.map(async (brand) => {
+        try {
+          const res = await fetch(
+            `${baseURL}/vendors/name/${encodeURIComponent(brand)}`
+          );
+          const data = await res.json();
+
+          map[brand] =
+            data?.vendor?.passportPhoto ||
+            data?.vendor?.businessLogo ||
+            "/avatar.png";
+        } catch {
+          map[brand] = "/avatar.png";
+        }
+      })
+    );
+
+    setBrandPhotos(map);
+  };
+
+  if (deals.length > 0) fetchBrandPhotos();
+}, [deals]);
+
 
   // -----------------------
   // normalization + fetch
@@ -186,21 +222,9 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
         const preferences = getUserPreferencesFromStorage();
         console.log("User preferences from storage:", preferences);
 
-        if (preferences.length > 0) {
-          const filtered = filterDealsForUser(normalized, preferences);
-          if (filtered.length > 0) {
-            normalized = filtered;
-            console.log(
-              "Applied preference filter — matched deals:",
-              filtered.length,
-            );
-          } else {
-            console.log(
-              "No deals matched preferences — falling back to all deals",
-            );
-            // if you prefer, you could keep normalized = [] to show none, but fallback improves UX
-          }
-        }
+        const filtered = filterDealsForUser(normalized, preferences);
+    normalized = filtered.length > 0 ? filtered : [];
+
 
         if (!mounted) return;
         setDeals(normalized);
@@ -235,6 +259,18 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
   const slideRight = () => {
     if (scrollRef.current) scrollRef.current.scrollLeft += 300;
   };
+
+
+
+  const timeAgo = (date) => {
+  if (!date) return "";
+  const diff = Date.now() - new Date(date).getTime();
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  if (hours < 1) return "Just now";
+  if (hours < 24) return `${hours} hrs ago`;
+  return `${Math.floor(hours / 24)} days ago`;
+};
+
 
   // -----------------------
   // render
@@ -390,15 +426,15 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
                 <div className="mt-3 flex items-center justify-between text-[12px] text-gray-500">
                   <div className="flex items-center gap-2">
-                    <Image
-                      src={item.userAvatar || "/avatar.png"}
-                      alt="User avatar"
-                      width={18}
-                      height={18}
-                      unoptimized
-                      className="rounded-full object-cover"
-                    />
-                    <span>24 hrs ago</span>
+                  <Image
+  src={brandPhotos[item.brand] || "/avatar.png"}
+  alt={item.brand}
+  width={18}
+  height={18}
+  className="rounded-full object-cover"
+/>
+
+                    <span>{timeAgo(item.createdAt)}</span>
                     <span className="hidden sm:inline">
                       by {item.userName || "Slyce company limited"}
                     </span>

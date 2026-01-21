@@ -176,7 +176,7 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
             </div>
 
             <a
-              href={`/vendors/${s._id}`}
+              href={`/vendors/${s.id}`}
               className="block w-full text-center mt-7 font-bold text-[#007AFF] hover:text-[#005bb5] flex items-center justify-center text-[14px] transition-colors"
             >
               View store

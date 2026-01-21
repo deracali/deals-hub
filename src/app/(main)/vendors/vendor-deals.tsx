@@ -176,6 +176,8 @@ const DealsSection: React.FC<DealsSectionProps> = ({ vendorId, brand }) => {
   const [activeTab, setActiveTab] = useState<"active" | "past">("active");
   const [deals, setDeals] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 
   useEffect(() => {
     if (!brand) return;
