@@ -43,7 +43,7 @@ export const fetchDeals = async (
   // ✅ Always fetch only approved (active) deals
   params.append("status", "active");
 
-  const url = `${baseURL}/deals/get${params.toString() ? `?${params.toString()}` : ""}`;
+  const url = `http://localhost:5000/deals/get${params.toString() ? `?${params.toString()}` : ""}`;
 
   const res = await fetch(url);
   if (!res.ok) {

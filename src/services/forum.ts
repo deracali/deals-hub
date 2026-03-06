@@ -88,6 +88,22 @@ export const fetchForumPosts = async (
   }
 };
 
+
+const popup = (message: string) => {
+  const div = document.createElement("div");
+  div.innerText = message;
+
+  div.className =
+    "fixed top-5 left-1/2 -translate-x-1/2 bg-black text-white text-sm px-4 py-2 rounded-lg shadow-lg z-50";
+
+  document.body.appendChild(div);
+
+  setTimeout(() => {
+    div.remove();
+  }, 2000);
+};
+
+
 export const createForumPost = async (
   formData: any,
   onSubmit: (post: ForumPost) => void,
@@ -102,13 +118,13 @@ export const createForumPost = async (
     const currentUser = storedUser ? JSON.parse(storedUser) : null;
     const userId = currentUser?._id || currentUser?.id;
     if (!userId) {
-      alert("You must be logged in to create a post.");
+      popup("You must be logged in to create a post.");
       setIsSubmitting(false);
       return;
     }
 
     if (!formData.content || formData.content.trim().length < 20) {
-      alert("Post content must be at least 20 characters long.");
+      popup("Post content must be at least 20 characters long.");
       setIsSubmitting(false);
       return;
     }
@@ -165,7 +181,7 @@ export const createForumPost = async (
       } catch {
         msg = text;
       }
-      alert(msg);
+      popup(msg);
       throw new Error(msg);
     }
 

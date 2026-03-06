@@ -95,7 +95,7 @@ export default function CouponsPage(): JSX.Element {
     setError("");
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/coupons/get`,
+        `https://dealshub-server.onrender.com/api/coupons/get`,
       );
       if (!res.ok) throw new Error("Failed to fetch coupons");
       const payload = await res.json();
@@ -132,8 +132,8 @@ export default function CouponsPage(): JSX.Element {
       };
 
       const url = editingCouponId
-        ? `http://localhost:5000/api/coupons/update/${editingCouponId}`
-        : "http://localhost:5000/api/coupons/create";
+        ? `https://dealshub-server.onrender.com/api/coupons/update/${editingCouponId}`
+        : "https://dealshub-server.onrender.com/api/coupons/create";
       const method = editingCouponId ? "PUT" : "POST";
 
       const res = await fetch(url, {
@@ -191,7 +191,7 @@ export default function CouponsPage(): JSX.Element {
     setLoading(true);
     try {
       const res = await fetch(
-        `http://localhost:5000/api/coupons/delete/${id}`,
+        `https://dealshub-server.onrender.com/api/coupons/delete/${id}`,
         {
           method: "DELETE",
         },

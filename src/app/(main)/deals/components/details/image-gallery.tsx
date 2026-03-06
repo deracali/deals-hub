@@ -10,7 +10,9 @@ type DealImageGalleryProps = {
 };
 
 const DealImageGallery = ({ images, title }: DealImageGalleryProps) => {
-  const safeImages = images.filter(Boolean);
+  const safeImages = images.filter(
+  (img) => img && !img.toLowerCase().endsWith(".gif")
+);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const nextImage = () =>

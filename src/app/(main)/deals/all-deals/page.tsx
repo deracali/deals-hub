@@ -79,7 +79,7 @@ const MarketingHomeContent = () => {
   useEffect(() => {
     const fetchTrendingProducts = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/deals/get");
+        const res = await fetch("https://dealshub-server.onrender.com/api/deals/get");
         const data = await res.json();
 
         console.log("✅ Fetched data:", data);
@@ -106,7 +106,7 @@ const MarketingHomeContent = () => {
             id: deal._id,
             title: deal.title,
             image:
-              deal.images?.[0] ||
+              deal.images?.[0] || deal.images?.[0] ||
               "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=600&fit=crop",
             currentPrice: deal.discountedPrice,
             originalPrice: deal.originalPrice,
@@ -139,7 +139,7 @@ const MarketingHomeContent = () => {
     const fetchCuratedCategories = async () => {
       try {
         const res = await fetch(
-          "http://localhost:5000/api/curated-categories/get"
+          "https://dealshub-server.onrender.com/api/curated-categories/get"
         );
         const data = await res.json();
 

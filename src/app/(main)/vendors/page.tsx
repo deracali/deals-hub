@@ -178,10 +178,16 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
       setLoading(true);
       try {
         const res = await fetch(
-          `${baseURL}/vendors/get?page=${currentPage}&limit=${limit}`,
+          `${baseURL}/vendors/get?page=${currentPage}&limit=${limit}`
         );
         const data = await res.json();
-        setVendors(data.data || []);
+
+        // 🔥 Filter out rejected vendors
+        const filteredVendors = (data.data || []).filter(
+          (vendor) => vendor.status !== "rejected"
+        );
+
+        setVendors(filteredVendors);
         setTotalPages(data.pages);
       } catch (err) {
         console.error(err);

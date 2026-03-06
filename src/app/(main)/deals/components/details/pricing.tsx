@@ -26,7 +26,7 @@ type DealPricingProps = {
   currencySymbol?: string;
   shippingCost?: string;
   couponCode?: string;
-  affiliateUrl?: string;
+    url?: string;
 
   brand?: string;
   platform?: string;
@@ -56,10 +56,33 @@ type DealPricingProps = {
   status?: string;
 };
 
+
+const MARKETPLACE_NAMES = [
+  "amazon",
+  "alibaba",
+  "aliexpress",
+  "ebay",
+  "jumia",
+  "konga",
+  "etsy",
+  "walmart",
+  "jiji",
+];
+
+
+const isMarketplaceUrl = (url?: string) => {
+  if (!url) return false;
+  // This turns "https://jiji.ng/" into "https://jiji.ng/"
+  // and checks if any of our names are inside it.
+  const lowerUrl = url.toLowerCase();
+  return MARKETPLACE_NAMES.some((name) => lowerUrl.includes(name));
+};
+
 const DealPricing = ({
   title = "Product name",
   description = "No description available for this deal.",
   brand = "Amazon",
+   url,
   images = [],
   originalPrice = 100000,
   discountedPrice = 99999.9,
@@ -84,6 +107,12 @@ const DealPricing = ({
     sizes[0] || null,
   );
 
+  const isExternalMarketplace = isMarketplaceUrl(url);
+
+  // Check your console to see what is happening!
+  console.log("Current URL:", url);
+  console.log("Is Marketplace:", isExternalMarketplace);
+
   const params = useParams();
   const dealId = params?.id as string;
 
@@ -104,15 +133,44 @@ const DealPricing = ({
 
   const [likesCount, setLikesCount] = useState(likesList.length);
 
-  const handleAddToCart = () => {
-    if (!dealId) {
-      alert("Deal ID missing");
+  const popup = (message: string) => {
+    const div = document.createElement("div");
+    div.innerText = message;
+
+    div.className =
+      "fixed top-5 left-1/2 -translate-x-1/2 bg-black text-white text-sm px-4 py-2 rounded-lg shadow-lg z-50";
+
+    document.body.appendChild(div);
+
+    setTimeout(() => {
+      div.remove();
+    }, 2000);
+  };
+
+
+  const handlePrimaryAction = () => {
+    // 🔗 Marketplace → redirect
+    if (isMarketplaceUrl(url)) {
+      const fullUrl = url!.startsWith("http") ? url! : `https://${url}`;
+      window.open(fullUrl, "_blank", "noopener,noreferrer");
       return;
     }
+
+    // 🛒 Personal / vendor link → add to cart
+    handleAddToCart();
+  };
+
+
+
+
+  const handleAddToCart = async () => {
+    if (!dealId) return;
 
     setAddingToCart(true);
 
     try {
+      await new Promise((resolve) => setTimeout(resolve, 50)); // allow state to update
+
       const raw = localStorage.getItem("cart");
       const cart = raw ? JSON.parse(raw) : [];
 
@@ -127,19 +185,21 @@ const DealPricing = ({
         selected: true,
         color: selectedColor,
         size: selectedSize,
+        brand,
         addedAt: Date.now(),
       };
 
-      // prevent duplicates (optional)
       const exists = cart.find((item: any) => item.id === dealId);
-      if (!exists) {
-        cart.push(newItem);
-      }
+      if (!exists) cart.push(newItem);
 
       localStorage.setItem("cart", JSON.stringify(cart));
 
-      // 🔔 notify header / other tabs
+      // 🔔 notify other tabs
       window.dispatchEvent(new Event("storage"));
+
+      popup("Added to cart");
+
+
     } catch (err) {
       console.error("Failed to add to cart", err);
     } finally {
@@ -147,9 +207,11 @@ const DealPricing = ({
     }
   };
 
+
+
   const handleSaveDeal = () => {
     if (!dealId) {
-      alert("Deal ID missing");
+      popup("Deal ID missing");
       return;
     }
 
@@ -174,9 +236,11 @@ const DealPricing = ({
     }
   };
 
+
+
   const handleLikeToggle = async () => {
     if (!userId) {
-      alert("Please login to like this deal");
+      popup("Please login to like this deal");
       return;
     }
 
@@ -198,7 +262,7 @@ const DealPricing = ({
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/deals/${dealId}/like`,
+        `https://dealshub-server.onrender.com/api/deals/${dealId}/like`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -233,7 +297,7 @@ const DealPricing = ({
   useEffect(() => {
     if (!brand) return;
 
-    fetch(`http://localhost:5000/api/vendors/name/${encodeURIComponent(brand)}`)
+    fetch(`https://dealshub-server.onrender.com/api/vendors/name/${encodeURIComponent(brand)}`)
       .then((res) => res.json())
       .then((data) => {
         setBrandDetails({
@@ -495,17 +559,29 @@ const DealPricing = ({
       <div className="flex flex-col sm:flex-row items-center gap-3 mt-8">
         {/* 1. Get Deal Button - Full width on mobile, flex-[2.5] on desktop */}
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            handleAddToCart();
-          }}
-          className={`w-full cursor-pointer sm:flex-[2.5] rounded-2xl py-4 font-bold text-sm sm:text-base flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg shadow-blue-100
-          ${addingToCart ? "bg-blue-400" : "bg-[#0085FF] hover:bg-blue-600 text-white"}`}
-          disabled={addingToCart}
-        >
-          {addingToCart ? "Adding..." : "Get deal now"}
-          <Icon name="ShoppingCart" size={18} />
-        </button>
+      disabled={addingToCart}
+      onClick={(e) => {
+        e.stopPropagation();
+
+        if (isExternalMarketplace) {
+          const fullUrl = url!.startsWith("http") ? url! : `https://${url}`;
+          window.open(fullUrl, "_blank", "noopener,noreferrer");
+          return; // This stops the "Add to cart" code from running
+        }
+
+        handleAddToCart();
+      }}
+      className="w-48 px-6 py-3 rounded-xl font-semibold bg-blue-600 text-white"
+    >
+      {isExternalMarketplace
+        ? "Go to store"
+        : addingToCart
+          ? "Adding..."
+          : "Add to cart"}
+    </button>
+
+
+
 
         {/* 2. Save Deal Button - Full width on mobile, flex-1 on desktop */}
         <button

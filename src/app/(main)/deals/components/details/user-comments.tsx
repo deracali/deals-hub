@@ -161,13 +161,27 @@ const Comment = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
 const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
+const popup = (message: string) => {
+  const div = document.createElement("div");
+  div.innerText = message;
+
+  div.className =
+    "fixed top-5 left-1/2 -translate-x-1/2 bg-black text-white text-sm px-4 py-2 rounded-lg shadow-lg z-50";
+
+  document.body.appendChild(div);
+
+  setTimeout(() => {
+    div.remove();
+  }, 2000);
+};
+
   const replies = Array.isArray(comment.replies) ? comment.replies : [];
   const indent = depth * 36;
 
   // ✅ Handle Like / Dislike
   const handleVote = async (action: "like" | "dislike") => {
     const user = getCurrentUser();
-    if (!user) return alert(`Please login to ${action}`);
+    if (!user) return popup(`Please login to ${action}`);
 
     try {
       const res = await fetch(
@@ -319,6 +333,19 @@ const StarRating = ({ dealId }: { dealId: string }) => {
   const [hover, setHover] = useState(0);
 const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
+const popup = (message: string) => {
+  const div = document.createElement("div");
+  div.innerText = message;
+
+  div.className =
+    "fixed top-5 left-1/2 -translate-x-1/2 bg-black text-white text-sm px-4 py-2 rounded-lg shadow-lg z-50";
+
+  document.body.appendChild(div);
+
+  setTimeout(() => {
+    div.remove();
+  }, 2000);
+};
 
   const fetchRating = async () => {
     try {
@@ -339,7 +366,7 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
   const handleRate = async (value: number) => {
     const user = getCurrentUser();
-    if (!user) return alert("Please login to rate this deal");
+    if (!user) return popup("Please login to rate this deal");
 
     setRating(value);
 
@@ -404,7 +431,19 @@ const CommunityDiscussion = ({ dealId }: { dealId: string }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
+const popup = (message: string) => {
+  const div = document.createElement("div");
+  div.innerText = message;
 
+  div.className =
+    "fixed top-5 left-1/2 -translate-x-1/2 bg-black text-white text-sm px-4 py-2 rounded-lg shadow-lg z-50";
+
+  document.body.appendChild(div);
+
+  setTimeout(() => {
+    div.remove();
+  }, 2000);
+};
 
   const fetchComments = async () => {
     try {
@@ -437,7 +476,7 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
   const submitComment = async () => {
     const currentUser = getCurrentUser();
-    if (!currentUser) return alert("You must be logged in to comment");
+    if (!currentUser) return popup("You must be logged in to comment");
 
     setIsSubmitting(true);
     try {

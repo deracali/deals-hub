@@ -145,6 +145,7 @@ const DealDetails = () => {
               images={deal?.images} // Array of images
               category={deal?.category}
               tags={deal?.tags}
+              url={deal?.url}
               // Pricing
               originalPrice={deal?.originalPrice}
               discountedPrice={deal?.discountedPrice}

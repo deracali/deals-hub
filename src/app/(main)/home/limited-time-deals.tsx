@@ -92,6 +92,7 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
                     src={item.images?.[0] || "/placeholder.png"}
                     alt={item.title}
                     fill
+                    unoptimized
                     className="object-cover"
                   />
 

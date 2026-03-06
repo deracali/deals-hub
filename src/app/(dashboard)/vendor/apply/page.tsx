@@ -131,6 +131,20 @@ export default function VendorRegistrationPage() {
   const [loading, setLoading] = useState(false); // ✅ Loading state
   const router = useRouter();
 
+
+  const popup = (message: string) => {
+    const div = document.createElement("div");
+    div.innerText = message;
+
+    div.className =
+      "fixed top-5 left-1/2 -translate-x-1/2 bg-black text-white text-sm px-4 py-2 rounded-lg shadow-lg z-50";
+
+    document.body.appendChild(div);
+
+    setTimeout(() => {
+      div.remove();
+    }, 2000);
+  };
   // Add this inside your VendorRegistrationPage component:
 
   const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -148,7 +162,7 @@ export default function VendorRegistrationPage() {
       (form.elements.namedItem("email") as HTMLInputElement)?.value || "";
 
     if (!businessType || !businessName || !email) {
-      alert("Please fill in all required fields (Business type, Name, Email).");
+      popup("Please fill in all required fields (Business type, Name, Email).");
       setLoading(false);
       return;
     }

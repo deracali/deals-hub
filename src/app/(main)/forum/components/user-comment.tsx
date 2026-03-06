@@ -384,27 +384,36 @@ type CommunityDiscussionProps = {
   renderContentWithHashtags?: (s: string) => React.ReactNode;
 };
 
-const mapApiCommentToUI = (comment: any, postId: string) => ({
-  id: comment._id,
-  postId, // ✅ KEEP IT
-  user: {
-    name: comment.author?.name || "Anonymous",
-    avatar: comment.author?.image || "https://via.placeholder.com/40",
-    isVerified: comment.author?.isVerified || false,
-    badge: comment.author?.isVerified
-      ? { text: "Trusted", color: "bg-blue-100 text-blue-600" }
-      : null,
-    rating: 5.0,
-    location: "Nigeria",
-  },
-  text: comment.comment,
-  timestamp: new Date(comment.date).toLocaleString(),
-  likes: comment.likes ?? 0,
-  dislikes: comment.dislikes ?? 0,
-  replies: Array.isArray(comment.replies)
-    ? comment.replies.map((r: any) => mapApiCommentToUI(r, postId))
-    : [],
-});
+const mapApiCommentToUI = (comment: any, postId: string) => {
+  // Look for name/image directly on the comment (flattened)
+  // OR inside the author object (nested)
+  const name = comment.name || comment.author?.name || "Anonymous";
+  const image = comment.image || comment.author?.image || comment.author?.photo || "https://via.placeholder.com/40";
+  const isVerified = comment.isVerified ?? comment.author?.isVerified ?? false;
+
+  return {
+    id: comment._id,
+    postId,
+    user: {
+      name: name,
+      avatar: image,
+      isVerified: isVerified,
+      badge: isVerified
+        ? { text: "Trusted", color: "bg-blue-100 text-blue-600" }
+        : null,
+      rating: 5.0,
+      location: "Nigeria",
+    },
+    text: comment.comment,
+    timestamp: new Date(comment.date).toLocaleString(),
+    likes: comment.likes ?? 0,
+    dislikes: comment.dislikes ?? 0,
+    replies: Array.isArray(comment.replies)
+      ? comment.replies.map((r: any) => mapApiCommentToUI(r, postId))
+      : [],
+  };
+};
+
 
 const CommunityDiscussion: React.FC<CommunityDiscussionProps> = ({
   newComment,
@@ -507,7 +516,7 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
             <span className="font-medium">{comments.length}</span>
           </div>
         </div>
-    
+
       </div>
 
       {/* Comment Threads */}

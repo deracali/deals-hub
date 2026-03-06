@@ -115,6 +115,20 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
   };
 
 
+  const popup = (message: string) => {
+    const div = document.createElement("div");
+    div.innerText = message;
+
+    div.className =
+      "fixed top-5 left-1/2 -translate-x-1/2 bg-black text-white text-sm px-4 py-2 rounded-lg shadow-lg z-50";
+
+    document.body.appendChild(div);
+
+    setTimeout(() => {
+      div.remove();
+    }, 2000);
+  };
+
   useEffect(() => {
     const loadPosts = async () => {
       setLoading(true);
@@ -165,10 +179,10 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
       const data = await res.json();
       console.log("Report submitted successfully:", data);
-      alert("Report submitted successfully.");
+      popup("Report submitted successfully.");
     } catch (err: any) {
       console.error("Error submitting report:", err);
-      alert(`Error submitting report: ${err.message}`);
+      popup(`Error submitting report: ${err.message}`);
     } finally {
       setShowReportModal(false);
       setReportTarget(null);
@@ -181,7 +195,7 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
     try {
       const storedUser = localStorage.getItem("user");
       if (!storedUser) {
-        alert("Please log in to like or dislike posts!");
+        popup("Please log in to like or dislike posts!");
         return;
       }
 
@@ -221,7 +235,7 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
     try {
       const storedUser = localStorage.getItem("user");
       if (!storedUser) {
-  alert("Please log in to like or dislike posts!");
+  popup("Please log in to like or dislike posts!");
   return;
 }
 
@@ -1017,16 +1031,53 @@ function CreatePostModal({ onClose, onSubmit }: CreatePostModalProps) {
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
 
+
+  const containsForbiddenContent = (text: string) => {
+    const phoneRegex = /\b\d{10,15}\b/; // phone numbers
+    const emailRegex = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i;
+    const urlRegex = /(https?:\/\/|www\.)\S+/i;
+    const socialRegex =
+      /(instagram\.com|facebook\.com|twitter\.com|tiktok\.com|wa\.me|whatsapp)/i;
+
+    return (
+      phoneRegex.test(text) ||
+      emailRegex.test(text) ||
+      urlRegex.test(text) ||
+      socialRegex.test(text)
+    );
+  };
+
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (formData.type === "scam-report" && !formData.scamUrl.trim()) {
-      alert("Scam reports must include a URL.");
+    const storedUser = localStorage.getItem("user");
+
+    if (!storedUser) {
+      popup("You must be logged in to post.");
+      return;
+    }
+
+    const user = JSON.parse(storedUser);
+
+    if (user.status === "suspended" || user.status === "blocked") {
+      popup("Your account is restricted from posting.");
+      return;
+    }
+
+    const fullText = formData.title + " " + formData.content;
+
+    // ❌ Block links, phones, emails, socials for ALL post types
+    if (containsForbiddenContent(fullText)) {
+      popup(
+        "Phone numbers, emails, social links and website links are not allowed."
+      );
       return;
     }
 
     await createForumPost(formData, onSubmit, onClose, setIsSubmitting);
   };
+
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">

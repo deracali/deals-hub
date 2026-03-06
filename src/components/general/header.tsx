@@ -18,6 +18,8 @@ import {
 } from "lucide-react";
 import { Input } from "../ui/input";
 import { useAuth } from "@/context/auth-context";
+import { useRouter } from "next/navigation";
+
 
 interface UserLocal {
   name?: string;
@@ -34,10 +36,10 @@ const Header = () => {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const location = usePathname();
   const [cartCount, setCartCount] = useState<number>(0);
-
+const [cartItems, setCartItems] = useState<any[]>([]);
   const { user, isAuthenticated, signOut } = useAuth();
   const [savedDealsCount, setSavedDealsCount] = useState<number>(0);
-
+  const router = useRouter();
   const navigationItems = [
     { label: "Deals", path: "/deals", icon: "Tag" },
     { label: "Submit Deal", path: "/deals/post", icon: "Plus" },
@@ -51,14 +53,18 @@ const Header = () => {
     try {
       const raw = localStorage.getItem("cart");
       if (!raw) {
+        setCartItems([]);
         setCartCount(0);
         return;
       }
+
       const parsed = JSON.parse(raw);
-      setCartCount(
-        Array.isArray(parsed) ? parsed.length : Object.keys(parsed).length,
-      );
-    } catch (err) {
+      const items = Array.isArray(parsed) ? parsed : [];
+
+      setCartItems(items);
+      setCartCount(items.length);
+    } catch {
+      setCartItems([]);
       setCartCount(0);
     }
   }, []);
@@ -78,6 +84,39 @@ const Header = () => {
       setSavedDealsCount(0);
     }
   }, []);
+
+
+
+  const updateCartStorage = (items: any[]) => {
+    localStorage.setItem("cart", JSON.stringify(items));
+    setCartItems(items);
+    setCartCount(items.length);
+  };
+
+  const increaseQty = (id: string) => {
+    const updated = cartItems.map(item =>
+      item.id === id
+        ? { ...item, quantity: item.quantity + 1 }
+        : item
+    );
+    updateCartStorage(updated);
+  };
+
+  const decreaseQty = (id: string) => {
+    const updated = cartItems.map(item =>
+      item.id === id && item.quantity > 1
+        ? { ...item, quantity: item.quantity - 1 }
+        : item
+    );
+    updateCartStorage(updated);
+  };
+
+  const removeItem = (id: string) => {
+    const updated = cartItems.filter(item => item.id !== id);
+    updateCartStorage(updated);
+  };
+  // 1. Safety Redirect: If an admin hits the home/header, send them to dashboard
+
 
   const getDisplayName = (u?: UserLocal) => {
     if (!u) return "User";
@@ -233,66 +272,96 @@ const Header = () => {
 
                   {/* CART MODAL (from image) */}
                   {isCartOpen && (
-                    <div className="absolute right-0 mt-4 w-[450px] bg-white rounded-xl shadow-2xl p-5 text-gray-800 animate-in fade-in zoom-in duration-200">
-                      <div className="space-y-6 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                        {[1, 2, 3, 4].map((item) => (
-                          <div
-                            key={item}
-                            className="flex items-center gap-4 group"
-                          >
-                            <input
-                              type="checkbox"
-                              defaultChecked
-                              className="w-4 h-4 accent-[#0d9cff] rounded"
-                            />
-                            <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                              <Image
-                                src="/placeholder-product.png"
-                                alt="product"
-                                width={64}
-                                height={64}
-                                className="object-cover"
-                              />
-                            </div>
-                            <div className="flex-1">
-                              <h4 className="text-[13px] font-medium leading-tight text-gray-600">
-                                Apple AirPods Pro (2nd Generation) with MagSafe
-                                Charging Case - Active Noise Cancellation
-                              </h4>
-                              <div className="mt-1 flex items-baseline gap-2">
-                                <span className="font-bold text-sm">
-                                  $ 9999.9
-                                </span>
-                                <span className="text-xs text-gray-400 line-through">
-                                  $ 10000.0
-                                </span>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-3">
-                              <button className="w-7 h-7 flex items-center justify-center rounded bg-[#0d9cff20] text-[#0d9cff]">
-                                <Minus size={14} />
-                              </button>
-                              <span className="text-sm font-bold">01</span>
-                              <button className="w-7 h-7 flex items-center justify-center rounded bg-[#0d9cff] text-white">
-                                <Plus size={14} />
-                              </button>
-                            </div>
-                            <button className="text-red-400 hover:text-red-600 transition-colors">
-                              <Trash2 size={18} />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                      <div className="mt-6 pt-4 border-t">
-                        <Link
-                          href="/deals/cart"
-                          className="text-[#0d9cff] text-sm font-medium flex items-center gap-1 hover:underline"
-                        >
-                          View carts <span className="text-lg">↗</span>
-                        </Link>
-                      </div>
-                    </div>
-                  )}
+    <div className="absolute right-0 mt-4 w-[450px] bg-white rounded-xl shadow-2xl p-5 text-gray-800 animate-in fade-in zoom-in duration-200">
+      <div className="space-y-6 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+
+        {cartItems.length === 0 ? (
+          <div className="text-center text-sm text-gray-400 py-10">
+            Your cart is empty
+          </div>
+        ) : (
+          cartItems.map((item) => (
+            <div
+              key={item.id}
+              className="flex items-center gap-4 group"
+            >
+              <input
+                type="checkbox"
+                checked={item.selected}
+                readOnly
+                className="w-4 h-4 accent-[#0d9cff] rounded"
+              />
+
+              <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                <Image
+                  src={item.images?.[0] || "/placeholder-product.png"}
+                  alt={item.title}
+                  width={64}
+                  height={64}
+                  className="object-cover"
+                  unoptimized
+                />
+              </div>
+
+              <div className="flex-1">
+                <h4 className="text-[13px] font-medium leading-tight text-gray-600 line-clamp-2">
+                  {item.title}
+                </h4>
+
+                <div className="mt-1 flex items-baseline gap-2">
+                  <span className="font-bold text-sm">
+                    {item.currency}
+                    {item.discountedPrice}
+                  </span>
+                  <span className="text-xs text-gray-400 line-through">
+                    {item.currency}
+                    {item.originalPrice}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => decreaseQty(item.id)}
+                  className="w-7 h-7 flex items-center justify-center rounded bg-[#0d9cff20] text-[#0d9cff]"
+                >
+                  <Minus size={14} />
+                </button>
+
+                <span className="text-sm font-bold">
+                  {String(item.quantity).padStart(2, "0")}
+                </span>
+
+                <button
+                  onClick={() => increaseQty(item.id)}
+                  className="w-7 h-7 flex items-center justify-center rounded bg-[#0d9cff] text-white"
+                >
+                  <Plus size={14} />
+                </button>
+              </div>
+
+              <button
+                onClick={() => removeItem(item.id)}
+                className="text-red-400 hover:text-red-600 transition-colors"
+              >
+                <Trash2 size={18} />
+              </button>
+            </div>
+          ))
+        )}
+
+      </div>
+
+      <div className="mt-6 pt-4 border-t">
+        <Link
+          href="/deals/cart"
+          className="text-[#0d9cff] text-sm font-medium flex items-center gap-1 hover:underline"
+        >
+          View carts <span className="text-lg">↗</span>
+        </Link>
+      </div>
+    </div>
+  )}
                 </div>
 
                 {/* Profile & User Menu Modal */}
@@ -314,12 +383,13 @@ const Header = () => {
                     </div>
                     {(user as any)?.photo ? (
                       <div className="w-9 h-9 relative rounded-full overflow-hidden border-2 border-white shadow-sm">
-                        <Image
-                          src={(user as any).photo}
-                          alt="avatar"
-                          fill
-                          className="object-cover"
-                        />
+                      <Image
+    src={(user as any).photo}
+    alt="avatar"
+    fill
+    sizes="36px"
+    className="object-cover"
+  />
                       </div>
                     ) : (
                       <div className="w-9 h-9 rounded-full bg-white text-[#0d9cff] flex items-center justify-center font-bold text-sm">
@@ -333,35 +403,57 @@ const Header = () => {
 
                   {/* USER DROPDOWN (from image) */}
                   {isUserMenuOpen && (
-                    <div className="absolute right-0 mt-4 w-48 bg-white rounded-xl shadow-xl py-2 px-1 border border-gray-50 animate-in fade-in zoom-in duration-150">
-                      <Link
-                        href="/profile"
-                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-500 hover:bg-gray-50 rounded-lg"
-                      >
-                        <User size={16} /> My account
-                      </Link>
-                      <Link
-                        href="/orders"
-                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-500 hover:bg-gray-50 rounded-lg"
-                      >
-                        <Package size={16} /> Orders
-                      </Link>
-                      <Link
-                        href="/wishlist"
-                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-500 hover:bg-gray-50 rounded-lg"
-                      >
-                        <Heart size={16} /> Wishlist
-                      </Link>
-                      <div className="mt-2 px-2">
-                        <button
-                          onClick={handleLogout}
-                          className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-red-500 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
-                        >
-                          <LogOut size={16} /> Log out
-                        </button>
-                      </div>
-                    </div>
-                  )}
+              <div className="absolute right-0 mt-4 w-48 bg-white rounded-xl shadow-xl py-2 px-1 border border-gray-50 animate-in fade-in zoom-in duration-150">
+              <Link
+href={
+  user?.role?.toLowerCase() === "admin"
+    ? "/admin"
+    : user?.type === "vendor"
+    ? "/vendor"
+    : "/profile"
+}
+                  onClick={() => setIsUserMenuOpen(false)}
+                  className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-500 hover:bg-gray-50 rounded-lg"
+                >
+                  <User size={16} />
+                  {user?.role?.toLowerCase() === "admin"
+  ? "Admin Dashboard"
+  : user?.type === "vendor"
+  ? "Vendor Dashboard"
+  : "My account"}
+                </Link>
+
+          <Link
+            href="/history"
+            className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-500 hover:bg-gray-50 rounded-lg"
+          >
+            <Package size={16} /> Orders
+          </Link>
+
+          <Link
+            href="/group-deals-history"
+            className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-500 hover:bg-gray-50 rounded-lg"
+          >
+            <Package size={16} /> Group Deals
+          </Link>
+
+          <Link
+            href="/wishlist"
+            className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-500 hover:bg-gray-50 rounded-lg"
+          >
+            <Heart size={16} /> Wishlist
+          </Link>
+
+          <div className="mt-2 px-2">
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-red-500 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
+            >
+              <LogOut size={16} /> Log out
+            </button>
+          </div>
+        </div>
+      )}
                 </div>
               </div>
             )}
@@ -543,7 +635,7 @@ const Header = () => {
             {/* Profile Image Part */}
             <div className="w-14 h-14 relative rounded-full overflow-hidden border-2 border-[#0d9cff]">
               {(user as any)?.photo ? (
-                <Image src={(user as any).photo} alt="avatar" fill className="object-cover" />
+                <Image src={(user as any).photo} alt="avatar" fill  sizes="36px" className="object-cover" />
               ) : (
                 <div className="w-full h-full bg-[#0d9cff] text-white flex items-center justify-center font-bold text-xl">
                   {avatarInitials(user as UserLocal)}
@@ -613,11 +705,17 @@ const Header = () => {
 
     {/* 2. PROFILE QUICK LINKS (Only if logged in) */}
     {isAuthenticated && (
-      <div className="grid grid-cols-3 gap-2 px-6 py-4 border-b">
-        <Link href="/profile" onClick={() => setIsMenuOpen(false)} className="flex flex-col items-center gap-1 p-2">
-          <User size={20} className="text-gray-400" />
-          <span className="text-[10px] font-bold text-gray-600">Account</span>
-        </Link>
+    <div className="grid grid-cols-3 gap-2 px-6 py-4 border-b">
+      <Link
+        href={user?.role?.toLowerCase() === "admin" ? "/admin" : "/profile"}
+        onClick={() => setIsMenuOpen(false)}
+        className="flex flex-col items-center gap-1 p-2"
+      >
+        <User size={20} className={user?.role?.toLowerCase() === "admin" ? "text-[#0d9cff]" : "text-gray-400"} />
+        <span className="text-[10px] font-bold text-gray-600">
+          {user?.role?.toLowerCase() === "admin" ? "Admin" : "Account"}
+        </span>
+      </Link>
         <Link href="/orders" onClick={() => setIsMenuOpen(false)} className="flex flex-col items-center gap-1 p-2">
           <Package size={20} className="text-gray-400" />
           <span className="text-[10px] font-bold text-gray-600">Orders</span>

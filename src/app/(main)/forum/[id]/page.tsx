@@ -263,6 +263,21 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
   };
 
 
+  const popup = (message: string) => {
+    const div = document.createElement("div");
+    div.innerText = message;
+
+    div.className =
+      "fixed top-5 left-1/2 -translate-x-1/2 bg-black text-white text-sm px-4 py-2 rounded-lg shadow-lg z-50";
+
+    document.body.appendChild(div);
+
+    setTimeout(() => {
+      div.remove();
+    }, 2000);
+  };
+
+
   const handleReportSubmit = async (reason: string) => {
     if (!reportTarget) return;
     setIsReporting(true);
@@ -280,9 +295,9 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
       if (!res.ok) throw new Error("Failed to submit report");
 
-      alert("Report submitted successfully.");
+      popup("Report submitted successfully.");
     } catch (err: any) {
-      alert(err.message);
+      popup(err.message);
     } finally {
       setShowReportModal(false);
       setReportTarget(null);
@@ -295,7 +310,7 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
   const handleLike = async (postId: string) => {
     const storedUser = localStorage.getItem("user");
     if (!storedUser) {
-  alert("Please log in to like or dislike posts!");
+  popup("Please log in to like or dislike posts!");
   return;
 }
 
@@ -340,7 +355,7 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
   const handleDislike = async (postId: string) => {
     const storedUser = localStorage.getItem("user");
     if (!storedUser) {
-  alert("Please log in to like or dislike posts!");
+  popup("Please log in to like or dislike posts!");
   return;
 }
 
@@ -458,12 +473,13 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
         ? JSON.parse(storedUser)
         : { _id: "", name: "Anonymous", photo: "" };
 
+      // --- PAYLOAD UPDATED BELOW ---
       const payload = {
-        comment: newComment,
+        content: newComment,      // ✅ CHANGED from 'comment' to 'content'
         author: {
           userId: user._id,
-          name: user.name,
-          image: user.photo || "",
+          name: user.name,        // ✅ Backend checks author.name
+          photo: user.photo || "", // ✅ CHANGED from 'image' to 'photo'
           isVerified: false,
           reputation: 0,
         },
@@ -471,23 +487,22 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
       };
 
       const res = await fetch(
-        `${baseURL}/forum/${encodeURIComponent(idFromParams)}/comments`,
+        `https://dealshub-server.onrender.com/api/forum/${encodeURIComponent(idFromParams)}/comments`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
-        },
+        }
       );
 
       if (!res.ok) {
-        const text = await res.text().catch(() => null);
-        throw new Error(
-          text || `Failed to post comment (status ${res.status})`,
-        );
+        // Improved error reading for JSON responses
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || `Error ${res.status}`);
       }
 
       await fetchComments();
-      setNewComment(""); // Clear input
+      setNewComment("");
     } catch (err: any) {
       console.error("Error submitting comment:", err);
       setError(err.message || "Failed to submit comment");
@@ -495,6 +510,8 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
       setIsSubmittingComment(false);
     }
   };
+
+
 
   const handleReport = (type: "post" | "comment", id: string) => {
     setReportTarget({ type, id });

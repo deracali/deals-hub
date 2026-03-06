@@ -47,7 +47,7 @@ export default function HeroPage() {
     setError("");
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/heroes/get`,
+        `https://dealshub-server.onrender.com/api/heroes/get`,
       );
       if (!res.ok) throw new Error("Failed to fetch heroes");
       const data = await res.json();
@@ -70,8 +70,8 @@ export default function HeroPage() {
     try {
       const method = editingId ? "PUT" : "POST";
       const url = editingId
-        ? `http://localhost:5000/api/heroes/update/${editingId}`
-        : "http://localhost:5000/api/heroes/create";
+        ? `https://dealshub-server.onrender.com/api/heroes/update/${editingId}`
+        : "https://dealshub-server.onrender.com/api/heroes/create";
 
       const res = await fetch(url, {
         method,
@@ -116,7 +116,7 @@ export default function HeroPage() {
     if (!confirm("Are you sure you want to delete this hero?")) return;
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:5000/api/heroes/delete/${id}`, {
+      const res = await fetch(`https://dealshub-server.onrender.com/api/heroes/delete/${id}`, {
         method: "DELETE",
       });
       if (!res.ok) throw new Error("Failed to delete hero");

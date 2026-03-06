@@ -1,287 +1,305 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import {
-  Search,
-  Edit,
-  Trash2,
-  UsersIcon,
-  Shield,
-  Mail,
-  Ban,
-  CheckCircle,
+  MoreVertical,
+  ExternalLink,
+  ChevronDown,
+  LayoutGrid,
+  ChevronLeft,
+  ChevronRight,
+  Users as UsersIcon
 } from "lucide-react";
+import { UserStats } from "../component/UserStats";
+import { UserDetailModal } from "../component/UserDetailModal";
 
+// Updated Interface to match your User API response
 interface User {
   _id: string;
   email: string;
-  type: "regular" | "vendor" | "admin";
+  status: "active" | "suspended" | "blocked";
+  plan: string;
+  role: string;
+  type: string;
+  dealsCount: number;
+  dealsPosted: number;
   createdAt: string;
-  status?: "active" | "suspended";
+  // Fields not in snippet but kept for UI structure
+  name?: string;
+  address?: string;
+  location?: string;
+  phoneNumbers?: string[];
 }
 
 export default function UsersPage() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [typeFilter, setTypeFilter] = useState<string>("all");
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+const [selectedDetails, setSelectedDetails] = useState<any | null>(null);
 
-  // Fetch users from API
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalUsers, setTotalUsers] = useState(0);
+
+
+  const handleOpenModal = async (user: User) => {
+    try {
+      // Optional: Add a small loading toast or change cursor to 'wait'
+      const response = await fetch(`https://dealshub-server.onrender.com/api/users/${user._id}/details`);
+
+      if (!response.ok) throw new Error("Failed to fetch details");
+
+      const details = await response.json();
+      setSelectedDetails(details);
+    } catch (error) {
+      console.error("Error fetching user details:", error);
+      // Fallback: Use the data we already have from the list
+      setSelectedDetails({
+        user: user,
+        vendor: null,
+        orders: []
+      });
+    }
+  };
+
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users`,
+        setLoading(true);
+
+        const response = await fetch(
+          `https://dealshub-server.onrender.com/api/users?page=${page}&limit=${limit}`
         );
-        const data = await res.json();
-        if (data.users) {
-          // Add fallback values (like name and status) for display
-          const formattedUsers = data.users.map((u: any) => ({
-            ...u,
-            name: u.email.split("@")[0], // derive a temporary name from email
-            status: u.status || "active", // default status
-          }));
-          setUsers(formattedUsers);
-        }
-      } catch (err) {
-        console.error("Error fetching users:", err);
+
+        const json = await response.json();
+
+        setUsers(json.users || []);
+        setTotalPages(json.pagination?.pages || 1);
+        setTotalUsers(json.pagination?.total || 0);
+      } catch (error) {
+        console.error("Failed to fetch users:", error);
       } finally {
         setLoading(false);
       }
     };
 
     fetchUsers();
-  }, []);
+  }, [page, limit]);
 
-  const toggleUserStatus = async (userId: string, currentStatus: string) => {
-    const newStatus = currentStatus === "suspended" ? "active" : "suspended";
 
-    try {
-      // 1️⃣ Update the user's status in backend
-      const res = await fetch(
-        `http://localhost:5000/api/users/${userId}/status`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ status: newStatus }),
-        },
-      );
+  const updateUserStatusLocally = (
+    userId: string,
+    newStatus: "active" | "suspended" | "blocked"
+  ) => {
+    setUsers((prev) =>
+      prev.map((u) =>
+        u._id === userId ? { ...u, status: newStatus } : u
+      )
+    );
 
-      const data = await res.json();
-      if (!res.ok)
-        throw new Error(data.message || "Failed to update user status");
+    // also update selected user if open
+    setSelectedUser((prev) =>
+      prev && prev._id === userId
+        ? { ...prev, status: newStatus }
+        : prev
+    );
+  };
 
-      // 2️⃣ Update UI immediately
-      setUsers((prevUsers) =>
-        prevUsers.map((user) =>
-          user._id === userId ? { ...user, status: newStatus } : user,
-        ),
-      );
 
-      // 3️⃣ Send email if the account is suspended
-      if (newStatus === "suspended") {
-        await fetch("/api/send-suspension-email", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userEmail: data.email }), // email returned from backend
-        });
-        alert("🚫 User suspended and notified by email");
-      } else {
-        await fetch("/api/send-reactivation-email", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userEmail: data.email }),
-        });
-        alert("✅ User account reactivated and notified by email");
-      }
-    } catch (err) {
-      console.error("Error toggling user status:", err);
-      alert("An error occurred while updating user status");
+  const getStatusStyles = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case "active": return "bg-[#F0FDF4] text-[#22C55E] border-[#DCFCE7]";
+      case "blocked": return "bg-[#FEF2F2] text-[#EF4444] border-[#FEE2E2]";
+      case "suspended": return "bg-[#EFF6FF] text-[#3B82F6] border-[#DBEAFE]";
+      default: return "bg-gray-50 text-gray-500 border-gray-100";
     }
   };
 
-  const filteredUsers = users.filter((user) => {
-    const matchesSearch =
-      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesType = typeFilter === "all" || user.type === typeFilter;
-    return matchesSearch && matchesType;
-  });
-
-  if (loading) {
-    return (
-      <p className="text-center text-muted-foreground mt-10">
-        Loading users...
-      </p>
-    );
-  }
-
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-balance">User Management</h1>
-        <p className="text-muted-foreground mt-1">
-          Manage users, vendors, and administrators
-        </p>
-      </div>
+    <div className="w-full bg-white min-h-screen p-8 font-sans">
+    {selectedDetails && (
+      <UserDetailModal
+        data={selectedDetails}
+        onClose={() => setSelectedDetails(null)}
+        onStatusChange={updateUserStatusLocally}
+      />
+    )}
 
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-            size={18}
-          />
-          <Input
-            placeholder="Search users..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
+
+      <UserStats />
+
+      {/* Top Filter Bar */}
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-2">
+          <div className="bg-[#F97316] p-1.5 rounded-md">
+            <UsersIcon className="text-white w-4 h-4" />
+          </div>
+          <h1 className="text-lg font-bold text-gray-900 tracking-tight">Users</h1>
         </div>
-        <select
-          className="px-4 py-2 bg-background border border-input rounded-lg text-sm"
-          value={typeFilter}
-          onChange={(e) => setTypeFilter(e.target.value)}
-        >
-          <option value="all">All Users</option>
-          <option value="regular">Regular Users</option>
-          <option value="vendor">Vendors</option>
-          <option value="admin">Admins</option>
-        </select>
+
+        <div className="flex items-center gap-3">
+          <button className="flex items-center justify-between gap-10 px-4 py-2 bg-white border border-gray-100 rounded-lg text-[12px] font-medium text-gray-500 shadow-sm">
+            All Users <ChevronDown size={14} className="text-gray-400" />
+          </button>
+          <button className="flex items-center justify-between gap-10 px-4 py-2 bg-white border border-gray-100 rounded-lg text-[12px] font-medium text-gray-500 shadow-sm">
+            Newest Deals <ChevronDown size={14} className="text-gray-400" />
+          </button>
+          <button className="p-2 bg-white border border-gray-100 rounded-lg text-gray-300">
+            <LayoutGrid size={18} />
+          </button>
+        </div>
       </div>
 
-      <Card className="bg-card border-border">
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="border-b border-border">
-                <tr className="text-left">
-                  <th className="px-6 py-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    User
-                  </th>
-                  <th className="px-6 py-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Type
-                  </th>
-                  <th className="px-6 py-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Joined
-                  </th>
-                  <th className="px-6 py-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {filteredUsers.map((user) => (
-                  <tr
-                    key={user._id}
-                    className="hover:bg-accent/50 transition-colors"
-                  >
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-                          {user.type === "admin" ? (
-                            <Shield className="text-primary" size={18} />
-                          ) : user.type === "vendor" ? (
-                            <UsersIcon className="text-primary" size={18} />
-                          ) : (
-                            <Mail className="text-primary" size={18} />
-                          )}
-                        </div>
-                        <div className="min-w-0">
-                          <p className="font-medium truncate">{user.name}</p>
-                          <p className="text-sm text-muted-foreground truncate">
-                            {user.email}
-                          </p>
-                        </div>
+      {/* Table Container */}
+      <div className="overflow-x-auto border border-gray-50 rounded-lg">
+        <table className="w-full text-left border-collapse">
+          <thead className="bg-[#F9FAFB]">
+            <tr>
+              <th className="px-5 py-3 text-[11px] font-medium text-gray-400 whitespace-nowrap uppercase">User / Role</th>
+              <th className="px-5 py-3 text-[11px] font-medium text-gray-400 whitespace-nowrap uppercase">Plan</th>
+              <th className="px-5 py-3 text-[11px] font-medium text-gray-400 whitespace-nowrap uppercase">Deals Count</th>
+              <th className="px-5 py-3 text-[11px] font-medium text-gray-400 whitespace-nowrap uppercase">Email address</th>
+              <th className="px-5 py-3 text-[11px] font-medium text-gray-400 whitespace-nowrap uppercase">Joined Date</th>
+              <th className="px-5 py-3 text-[11px] font-medium text-gray-400 whitespace-nowrap uppercase">Status</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white">
+            {loading ? (
+              <tr><td colSpan={6} className="text-center py-10 text-gray-400">Fetching users...</td></tr>
+            ) : (
+              users.map((user) => (
+                <tr
+    key={user._id}
+    // Change this from setSelectedUser(user) to handleOpenModal(user)
+    onClick={() => handleOpenModal(user)}
+    className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors cursor-pointer group"
+  >
+                  {/* User Info */}
+                  <td className="px-5 py-5 min-w-[180px]">
+                    <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-[#007AFF] rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0 overflow-hidden">
+  {user.photo ? (
+    <img
+      src={user.photo}
+      alt={user.name || "User avatar"}
+      className="w-full h-full object-cover"
+    />
+  ) : (
+    <span>
+      {user.email
+        .split("@")[0]           // take the part before "@"
+        .split(/[\.\-_]/)        // split by dot, dash, underscore
+        .map((word) => word[0].toUpperCase()) // take first letter uppercase
+        .slice(0, 2)             // max 2 letters
+        .join("")}
+    </span>
+  )}
+</div>
+
+                      <div className="flex flex-col">
+                        <span className="text-[12px] font-bold text-gray-800 leading-tight">
+                          {user.type.toUpperCase()}
+                        </span>
+                        <span className="text-[10px] text-orange-500 font-medium">{user.role}</span>
                       </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                          user.type === "admin"
-                            ? "bg-destructive/10 text-destructive"
-                            : user.type === "vendor"
-                              ? "bg-chart-2/10 text-chart-2"
-                              : "bg-muted text-muted-foreground"
-                        }`}
-                      >
-                        {user.type}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                          user.status === "active"
-                            ? "bg-primary/10 text-primary"
-                            : user.status === "pending"
-                              ? "bg-chart-3/10 text-chart-3"
-                              : "bg-destructive/10 text-destructive"
-                        }`}
-                      >
+                    </div>
+                  </td>
+
+                  {/* Plan */}
+                  <td className="px-5 py-5">
+                    <p className="text-[11.5px] font-bold text-gray-600 uppercase">
+                      {user.plan || "free"}
+                    </p>
+                  </td>
+
+                  {/* Deals Count */}
+                  <td className="px-5 py-5">
+                    <p className="text-[11.5px] font-semibold text-gray-600">
+                      {user.dealsCount} deals
+                    </p>
+                  </td>
+
+                  {/* Email */}
+                  <td className="px-5 py-5">
+                    <p className="text-[11.5px] font-semibold text-gray-600">
+                      {user.email}
+                    </p>
+                  </td>
+
+                  {/* Joined Date */}
+                  <td className="px-5 py-5">
+                    <p className="text-[11.5px] font-semibold text-gray-600">
+                      {new Date(user.createdAt).toLocaleDateString()}
+                    </p>
+                  </td>
+
+                  {/* Status */}
+                  <td className="px-5 py-5">
+                    <div className="flex items-center justify-between">
+                      <span className={`px-3 py-1 rounded-md text-[10px] font-bold border uppercase ${getStatusStyles(user.status)}`}>
                         {user.status}
                       </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-muted-foreground">
-                      {new Date(user.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() =>
-                            toggleUserStatus(user._id, user.status!)
-                          }
-                          className={`p-2 hover:bg-accent rounded-lg transition-colors ${
-                            user.status === "suspended" && "hover:bg-primary/10"
-                          }`}
-                          title={
-                            user.status === "suspended"
-                              ? "Activate user"
-                              : "Suspend user"
-                          }
-                        >
-                          {user.status === "suspended" ? (
-                            <CheckCircle size={16} className="text-primary" />
-                          ) : (
-                            <Ban size={16} className="text-muted-foreground" />
-                          )}
-                        </button>
-                        <button className="p-2 hover:bg-accent rounded-lg transition-colors">
-                          <Edit size={16} className="text-muted-foreground" />
-                        </button>
-                        <button className="p-2 hover:bg-accent rounded-lg transition-colors">
-                          <Trash2 size={16} className="text-destructive" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
+                      <button
+    onClick={() => handleOpenModal(user)} // Call the fetch function here
+    className="hover:text-blue-600"
+  >
+    <MoreVertical size={16} />
+  </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
 
-      {filteredUsers.length === 0 && (
-        <Card className="bg-card border-border">
-          <CardContent className="py-12 text-center">
-            <UsersIcon
-              className="mx-auto text-muted-foreground mb-4"
-              size={48}
-            />
-            <h3 className="text-lg font-medium mb-2">No users found</h3>
-            <p className="text-muted-foreground text-sm">
-              Try adjusting your search or filters
-            </p>
-          </CardContent>
-        </Card>
-      )}
+      {/* Pagination */}
+      {/* Pagination */}
+  <div className="mt-12 flex items-center justify-center gap-4">
+    {/* Previous */}
+    <button
+      disabled={page === 1}
+      onClick={() => setPage((p) => Math.max(p - 1, 1))}
+      className={`flex items-center gap-1 text-[12px] font-bold ${
+        page === 1 ? "text-gray-300 cursor-not-allowed" : "text-gray-600 hover:text-black"
+      }`}
+    >
+      <ChevronLeft size={16} /> Previous
+    </button>
+
+    {/* Page numbers */}
+    <div className="flex items-center gap-1">
+      {Array.from({ length: totalPages }, (_, i) => i + 1)
+        .slice(Math.max(0, page - 3), page + 2)
+        .map((n) => (
+          <button
+            key={n}
+            onClick={() => setPage(n)}
+            className={`w-8 h-8 flex items-center justify-center rounded-md text-[12px] font-bold ${
+              n === page
+                ? "bg-[#007AFF] text-white"
+                : "text-gray-400 hover:bg-gray-50"
+            }`}
+          >
+            {n}
+          </button>
+        ))}
+    </div>
+
+    {/* Next */}
+    <button
+      disabled={page === totalPages}
+      onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
+      className={`flex items-center gap-1 text-[12px] font-bold ${
+        page === totalPages ? "text-gray-300 cursor-not-allowed" : "text-gray-800 hover:opacity-70"
+      }`}
+    >
+      Next <ChevronRight size={16} />
+    </button>
+  </div>
+
     </div>
   );
 }

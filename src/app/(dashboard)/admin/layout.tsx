@@ -3,7 +3,8 @@
 import type React from "react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AdminSidebar } from "./component/sidebar";
+import { AdminHeader } from "./component/AdminHeader";
+import { AdminSidebar } from "./component/sidebar"; // Import the new Sidebar
 
 export default function AdminLayout({
   children,
@@ -14,11 +15,9 @@ export default function AdminLayout({
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
 
   useEffect(() => {
-    // 🔹 Get user data (adjust based on your storage method)
     const storedUser = localStorage.getItem("user");
 
     if (!storedUser) {
-      // Not logged in → redirect to login
       router.replace("/login");
       return;
     }
@@ -26,26 +25,33 @@ export default function AdminLayout({
     const user = JSON.parse(storedUser);
 
     if (user.role !== "Admin") {
-      // Not an admin → redirect to personal route
-      router.replace(`/login`);
+      router.replace("/login");
       return;
     }
 
-    // Authorized
     setIsAuthorized(true);
   }, [router]);
 
-  // Prevent flicker while checking
-  if (isAuthorized === null) {
-    return null; // or show a spinner if you prefer
-  }
+  // Prevent render until auth check completes
+  if (isAuthorized === null) return null;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-white flex">
+      {/* 1. Add the Sidebar here */}
       <AdminSidebar />
-      <main className="lg:pl-64">
-        <div className="px-4 py-8 lg:px-8">{children}</div>
-      </main>
+
+      {/* 2. Main wrapper now needs "flex-1" and "lg:ml-64" to offset the sidebar width */}
+      <div className="flex-1 flex flex-col lg:ml-64 transition-all duration-300">
+        {/* Header */}
+        <AdminHeader />
+
+        <main className="flex-1 w-full">
+          {/* Removed pb-32 since the FloatingNav is gone */}
+          <div className="w-full px-8 pt-8 pb-10">
+            {children}
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

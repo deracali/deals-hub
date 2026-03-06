@@ -97,7 +97,7 @@ const URLInputSection: React.FC<URLInputSectionProps> = ({
 
     setIsAnalyzing(true);
     try {
-      const res = await fetch("http://localhost:5000/api/analyze-url", {
+      const res = await fetch("https://dealshub-server.onrender.com/api/analyze-url", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url: formData.url }),

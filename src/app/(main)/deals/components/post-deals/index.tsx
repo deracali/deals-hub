@@ -96,6 +96,22 @@ const DealSubmission = () => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
 
+
+  const popup = (message: string) => {
+    const div = document.createElement("div");
+    div.innerText = message;
+
+    div.className =
+      "fixed top-5 left-1/2 -translate-x-1/2 bg-black text-white text-sm px-4 py-2 rounded-lg shadow-lg z-50";
+
+    document.body.appendChild(div);
+
+    setTimeout(() => {
+      div.remove();
+    }, 2000);
+  };
+
+
   // Load userId from localStorage
   useEffect(() => {
     const id = getStoredUserId();
@@ -172,20 +188,44 @@ const DealSubmission = () => {
     return description.split(" ")[0].replace(/[:,-]/g, "");
   };
 
-  const getVendorBrandFromLocalStorage = () => {
+
+  useEffect(() => {
+  const vendorBrand = getVendorBrandFromLocalStorage();
+
+  if (vendorBrand) {
+    setFormData((prev) => ({
+      ...prev,
+      brand: vendorBrand,
+    }));
+  }
+}, []);
+
+
+  const getVendorBrandFromLocalStorage = (): string => {
+    if (typeof window === "undefined") return "";
+
     try {
       const raw = localStorage.getItem("user");
       if (!raw) return "";
-      const user = JSON.parse(raw);
-      return user.brand || "";
-    } catch {
+
+      const parsed = JSON.parse(raw);
+
+      // Make sure it's a vendor
+      if (parsed.type === "vendor" && parsed.brand) {
+        return parsed.brand;
+      }
+
+      return "";
+    } catch (error) {
+      console.error("Failed to read brand from localStorage", error);
       return "";
     }
   };
 
+
   const handleSubmit = async (submissionData: DealFormData) => {
     if (!userId) {
-      alert("You must be logged in to submit a deal.");
+      popup("You must be logged in to submit a deal.");
       return;
     }
 
@@ -241,16 +281,17 @@ const DealSubmission = () => {
 
       // ✅ VENDOR LIMIT CHECK
       if (latestUser.type === "vendor") {
-        const posted = latestUser.dealsPosted ?? 0;
+    const posted = latestUser.dealsPosted ?? 0;
+    const userPlan = latestUser.plan || "free";
+    const planLimit = userPlan === "premium" ? 20 : userPlan === "pro" ? 10 : 3;
 
-        if (posted >= 3) {
-          setErrors({
-            submit:
-              "You have reached the vendor free posting limit (3). Upgrade to post more deals.",
-          });
-          return;
-        }
-      }
+    if (posted >= planLimit) {
+      setErrors({
+        submit: `You have reached your ${userPlan} limit of ${planLimit} deals.`,
+      });
+      return;
+    }
+  }
 
       // 🚀 SUBMIT DEAL
       const { platform: submittedPlatform } = await submitDeal(
@@ -330,11 +371,11 @@ const DealSubmission = () => {
 
   const handleSaveDraft = (draftData: DealFormData) => {
     localStorage.setItem("dealSubmissionDraft", JSON.stringify(draftData));
-    alert("Draft saved successfully!");
+    popup("Draft saved successfully!");
   };
 
   const handlePreview = (previewData: DealFormData) => {
-    alert("Preview functionality would open here");
+    popup("Preview functionality would open here");
   };
 
   const handleClose = () => {

@@ -22,6 +22,7 @@ function AppImage({
   return (
     <Image
       src={src}
+      unoptimized
       alt={alt}
       width={width}
       height={height}

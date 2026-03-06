@@ -105,6 +105,21 @@ export const addDeal = async (
   }
 };
 
+const popup = (message: string) => {
+  const div = document.createElement("div");
+  div.innerText = message;
+
+  div.className =
+    "fixed top-5 left-1/2 -translate-x-1/2 bg-black text-white text-sm px-4 py-2 rounded-lg shadow-lg z-50";
+
+  document.body.appendChild(div);
+
+  setTimeout(() => {
+    div.remove();
+  }, 2000);
+};
+
+
 // 🔹 Delete deal
 export const deleteDeal = async (
   dealId: string,
@@ -122,17 +137,19 @@ export const deleteDeal = async (
       setVendorDeals((prev) => prev.filter((d) => d._id !== dealId));
     } else {
       const data = await res.json();
-      alert(data?.message || "Failed to delete deal");
+      popup(data?.message || "Failed to delete deal");
     }
   } catch (err: any) {
-    alert(err?.message || String(err));
+    popup(err?.message || String(err));
   }
 };
+
+
 
 // 🔹 Edit deal (placeholder for now)
 export const editDeal = (deal: any) => {
   console.log("edit", deal);
-  alert(
+  popup(
     "Edit flow not implemented yet — you can add a modal or navigate to /vendor/deals/edit/:id",
   );
 };

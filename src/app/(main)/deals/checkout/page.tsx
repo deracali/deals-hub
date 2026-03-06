@@ -44,6 +44,22 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
   const [orderItems, setOrderItems] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
 
+
+  const popup = (message: string) => {
+    const div = document.createElement("div");
+    div.innerText = message;
+
+    div.className =
+      "fixed top-5 left-1/2 -translate-x-1/2 bg-black text-white text-sm px-4 py-2 rounded-lg shadow-lg z-50";
+
+    document.body.appendChild(div);
+
+    setTimeout(() => {
+      div.remove();
+    }, 2000);
+  };
+
+
   // Load order from localStorage
   useEffect(() => {
     const storedOrder = JSON.parse(localStorage.getItem("order")) || [];
@@ -75,6 +91,7 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
             title: item.title,
             originalPrice: item.originalPrice,
             discountedPrice: item.discountedPrice,
+            brand: item.brand,
             quantity: item.quantity,
             currency: "USD",
             images: item.images || [],
@@ -121,12 +138,12 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
   const handlePayment = async () => {
     if (!paystackReady) {
-      alert("Paystack is not ready yet. Please wait...");
+      popup("Paystack is not ready yet. Please wait...");
       return;
     }
 
     if (!user?.email) {
-      alert("User email not found.");
+      popup("User email not found.");
       return;
     }
 

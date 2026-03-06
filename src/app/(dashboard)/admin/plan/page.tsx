@@ -44,7 +44,7 @@ export default function VendorPlanPage(): JSX.Element {
     setError("");
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/vendor-plans/get`,
+        `https://dealshub-server.onrender.com/api/vendor-plans/get`,
       );
       if (!res.ok) throw new Error("Failed to fetch vendor plans");
       const data = await res.json();
@@ -73,8 +73,8 @@ export default function VendorPlanPage(): JSX.Element {
       };
 
       const url = editingPlanId
-        ? `http://localhost:5000/api/vendor-plans/update/${editingPlanId}`
-        : "http://localhost:5000/api/vendor-plans/create";
+        ? `https://dealshub-server.onrender.com/api/vendor-plans/update/${editingPlanId}`
+        : "https://dealshub-server.onrender.com/api/vendor-plans/create";
       const method = editingPlanId ? "PUT" : "POST";
 
       const res = await fetch(url, {
@@ -113,7 +113,7 @@ export default function VendorPlanPage(): JSX.Element {
     setLoading(true);
     try {
       const res = await fetch(
-        `http://localhost:5000/api/vendor-plans/delete/${id}`,
+        `https://dealshub-server.onrender.com/api/vendor-plans/delete/${id}`,
         {
           method: "DELETE",
         },

@@ -155,10 +155,24 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
   const replies = comment.replies || [];
   const indent = depth * 36;
 
+  const popup = (message: string) => {
+    const div = document.createElement("div");
+    div.innerText = message;
+
+    div.className =
+      "fixed top-5 left-1/2 -translate-x-1/2 bg-black text-white text-sm px-4 py-2 rounded-lg shadow-lg z-50";
+
+    document.body.appendChild(div);
+
+    setTimeout(() => {
+      div.remove();
+    }, 2000);
+  };
+
   const handleAction = async (action: "like" | "dislike") => {
     try {
       const user = getCurrentUser();
-      if (!user) return alert("Please log in to vote.");
+      if (!user) return popup("Please log in to vote.");
 
       const res = await fetch(
         `${baseURL}/vendors/${vendorId}/comments/${comment.id}/${action}`,

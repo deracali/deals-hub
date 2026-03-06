@@ -3,108 +3,127 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { UserCircle, Shield, Save, LogOut } from "lucide-react";
+import { UserCircle, Shield, LogOut } from "lucide-react";
 
 export default function ProfilePage() {
-  const [formData, setFormData] = useState({
-    id: "",
-    name: "",
-    email: "",
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
-  });
+  const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  // ✅ Fetch admin info from API
+
+  const popup = (message: string) => {
+    const div = document.createElement("div");
+    div.innerText = message;
+
+    div.className =
+      "fixed top-5 left-1/2 -translate-x-1/2 bg-black text-white text-sm px-4 py-2 rounded-lg shadow-lg z-50";
+
+    document.body.appendChild(div);
+
+    setTimeout(() => {
+      div.remove();
+    }, 2000);
+  };
+
+
+
   useEffect(() => {
-    const fetchAdmin = async () => {
-      try {
-        const adminId = localStorage.getItem("userId"); // stored after login
-        if (!adminId) {
-          console.error("No admin ID found in localStorage");
-          return;
-        }
+    // ✅ Get user from localStorage
+    const userString = localStorage.getItem("user");
 
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/${adminId}`,
-        );
-        const data = await res.json();
-
-        if (res.ok && data.user) {
-          const user = data.user;
-          setFormData((prev) => ({
-            ...prev,
-            id: user._id,
-            name:
-              user.firstName && user.lastName
-                ? `${user.firstName} ${user.lastName}`
-                : user.name || "",
-            email: user.email || "",
-          }));
-        } else {
-          console.error("Failed to load admin:", data.message);
-        }
-      } catch (err) {
-        console.error("Error fetching admin profile:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchAdmin();
-  }, []);
-
-  // ✅ Update admin details
-  const handleSaveProfile = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.id) return alert("User ID not found");
+    if (!userString) {
+      popup("No user found. Redirecting...");
+      setTimeout(() => {
+        window.location.href = "/admin/";
+      }, 1500);
+      return;
+    }
 
     try {
-      const [firstName, ...rest] = formData.name.trim().split(" ");
-      const lastName = rest.join(" ");
+      const parsedUser = JSON.parse(userString);
 
-      const res = await fetch(
-        `http://localhost:5000/api/users/${formData.id}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: formData.email,
-            firstName,
-            lastName,
-          }),
-        },
-      );
-
-      const data = await res.json();
-      if (res.ok) {
-        alert("✅ Profile updated successfully");
-      } else {
-        alert(`❌ ${data.message}`);
+      // ✅ Check if user is admin
+      if (parsedUser.role !== "Admin") {
+        popup("❌ You are not an admin");
+        setTimeout(() => {
+          window.location.href = "/admin/";
+        }, 1500);
+        return;
       }
+
+      setUser(parsedUser);
     } catch (err) {
-      console.error("Error updating profile:", err);
-      alert("Error updating profile");
+      console.error("Failed to parse user:", err);
+      popup("Invalid user data. Redirecting...");
+      setTimeout(() => {
+        window.location.href = "/admin/";
+      }, 1500);
+    } finally {
+      setLoading(false);
     }
-  };
+  }, []);
 
-  // ❌ Password update is ignored per instruction
-  const handleChangePassword = (e: React.FormEvent) => {
-    e.preventDefault();
-    alert("Password update functionality is disabled for now.");
-  };
 
-  // ✅ Logout clears user and redirects
+  // ✅ Logout clears user and token
   const handleLogout = () => {
-    localStorage.removeItem("userId");
+    localStorage.removeItem("user");
     localStorage.removeItem("token");
     window.location.href = "/login";
   };
 
-  if (loading)
-    return <p className="text-muted-foreground mt-10">Loading profile...</p>;
+  if (loading) {
+    return (
+      <div className="space-y-6 max-w-4xl animate-pulse">
+        {/* Header */}
+        <div className="space-y-2">
+          <div className="h-8 w-48 bg-muted rounded-md" />
+          <div className="h-4 w-72 bg-muted rounded-md" />
+        </div>
+
+        {/* Profile Card Skeleton */}
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <div className="h-6 w-40 bg-muted rounded-md" />
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-6">
+              {/* Avatar */}
+              <div className="w-20 h-20 bg-muted rounded-full" />
+
+              {/* Name & Email */}
+              <div className="space-y-3">
+                <div className="h-5 w-40 bg-muted rounded-md" />
+                <div className="h-4 w-56 bg-muted rounded-md" />
+              </div>
+            </div>
+
+            {/* Role Badge Skeleton */}
+            <div className="mt-6 p-4 border rounded-lg bg-muted/30 space-y-2">
+              <div className="h-4 w-32 bg-muted rounded-md" />
+              <div className="h-3 w-64 bg-muted rounded-md" />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Danger Zone Skeleton */}
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <div className="h-6 w-32 bg-muted rounded-md" />
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between p-4 border rounded-lg">
+              <div className="space-y-2">
+                <div className="h-4 w-40 bg-muted rounded-md" />
+                <div className="h-3 w-56 bg-muted rounded-md" />
+              </div>
+              <div className="h-9 w-24 bg-muted rounded-md" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!user) return null;
 
   return (
     <div className="space-y-6 max-w-4xl">
@@ -121,123 +140,33 @@ export default function ProfilePage() {
           <CardTitle>Profile Information</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSaveProfile} className="space-y-6">
-            <div className="flex items-center gap-6">
-              <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center">
+          <div className="flex items-center gap-6">
+            <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center">
+              {user.photo ? (
+                <img
+                  src={user.photo}
+                  alt={user.name}
+                  className="w-20 h-20 rounded-full object-cover"
+                />
+              ) : (
                 <UserCircle className="text-primary" size={40} />
-              </div>
-              <div>
-                <h3 className="font-medium mb-1">{formData.name}</h3>
-                <p className="text-sm text-muted-foreground mb-2">
-                  {formData.email}
-                </p>
-                <Button variant="outline" size="sm" disabled>
-                  Change Avatar
-                </Button>
-              </div>
+              )}
             </div>
+            <div>
+              <h3 className="font-medium mb-1">{user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.name}</h3>
+              <p className="text-sm text-muted-foreground mb-2">{user.email}</p>
+            </div>
+          </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Full Name</label>
-                <Input
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                  placeholder="Enter your name"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Email Address</label>
-                <Input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
-                  placeholder="Enter your email"
-                />
-              </div>
+          <div className="flex items-center gap-2 p-4 bg-primary/5 border border-primary/20 rounded-lg mt-6">
+            <Shield className="text-primary" size={20} />
+            <div>
+              <p className="text-sm font-medium">Administrator</p>
+              <p className="text-xs text-muted-foreground">
+                You have full access to all admin features
+              </p>
             </div>
-
-            <div className="flex items-center gap-2 p-4 bg-primary/5 border border-primary/20 rounded-lg">
-              <Shield className="text-primary" size={20} />
-              <div>
-                <p className="text-sm font-medium">Administrator</p>
-                <p className="text-xs text-muted-foreground">
-                  You have full access to all admin features
-                </p>
-              </div>
-            </div>
-
-            <div className="flex justify-end">
-              <Button
-                type="submit"
-                className="bg-primary text-primary-foreground"
-              >
-                <Save size={16} className="mr-2" />
-                Save Changes
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-
-      {/* CHANGE PASSWORD (placeholder) */}
-      <Card className="bg-card border-border">
-        <CardHeader>
-          <CardTitle>Change Password</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleChangePassword} className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Current Password</label>
-              <Input
-                type="password"
-                value={formData.currentPassword}
-                onChange={(e) =>
-                  setFormData({ ...formData, currentPassword: e.target.value })
-                }
-                placeholder="Enter current password"
-              />
-            </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">New Password</label>
-                <Input
-                  type="password"
-                  value={formData.newPassword}
-                  onChange={(e) =>
-                    setFormData({ ...formData, newPassword: e.target.value })
-                  }
-                  placeholder="Enter new password"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Confirm Password</label>
-                <Input
-                  type="password"
-                  value={formData.confirmPassword}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      confirmPassword: e.target.value,
-                    })
-                  }
-                  placeholder="Confirm new password"
-                />
-              </div>
-            </div>
-            <div className="flex justify-end">
-              <Button
-                type="submit"
-                className="bg-primary text-primary-foreground"
-              >
-                Update Password
-              </Button>
-            </div>
-          </form>
+          </div>
         </CardContent>
       </Card>
 

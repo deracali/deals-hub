@@ -79,11 +79,27 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
     );
   }
 
+  const fileImages: File[] = [];
+  const urlImages: string[] = [];
+
   submissionData.images.forEach((img) => {
     if (img?.file) {
-      formDataToSend.append("images", img.file);
+      fileImages.push(img.file);
+    } else if (img?.url) {
+      urlImages.push(img.url);
     }
   });
+
+  // Append file uploads
+  fileImages.forEach((file) => {
+    formDataToSend.append("images", file);
+  });
+
+  // Append URL images (as JSON string)
+  if (urlImages.length > 0) {
+    formDataToSend.append("images", JSON.stringify(urlImages));
+  }
+
 
   const res = await fetch(`${baseURL}/deals/create`, {
     method: "POST",
@@ -97,12 +113,14 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
 };
 
 export const incrementDealsPosted = async (userId: string) => {
+  const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
   await fetch(`${baseURL}/increment-deals-posted/${userId}`, {
     method: "PUT",
   });
 };
 
 export const decrementDealsCount = async (userId: string) => {
+  const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
   await fetch(`${baseURL}/decrement-deals/${userId}`, {
     method: "PUT",
   });

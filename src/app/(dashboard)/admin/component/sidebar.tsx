@@ -3,70 +3,79 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  LayoutDashboard,
+  Home,
   Tag,
-  Package,
   Users,
+  Store,
   UserCircle,
+  Gift,
+  Star,
+  FileText,
+  Image as ImageIcon,
+  DollarSign,
+  MessagesSquare,
   LogOut,
   Menu,
   X,
-  Store,
-  DollarSign,
-  Image,
-  Boxes,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 const navigation = [
-  { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
-  { name: "Coupons", href: "/admin/coupons", icon: Tag },
-  { name: "Hero", href: "/admin/hero", icon: Image },
-  { name: "Plan", href: "/admin/plan", icon: DollarSign },
-  { name: "Deals", href: "/admin/deals", icon: Package },
-  { name: "Vendors", href: "/admin/vendors", icon: Store },
-  {
-    name: "Curated-Collection",
-    href: "/admin/curated-collection",
-    icon: Boxes,
-  },
+  { name: "Home", href: "/admin", icon: Home },
+  { name: "Deals", href: "/admin/deals", icon: Tag },
   { name: "Users", href: "/admin/users", icon: Users },
+  { name: "Vendors", href: "/admin/vendors", icon: Store },
   { name: "Profile", href: "/admin/profile", icon: UserCircle },
+  { name: "Coupons", href: "/admin/coupons", icon: Gift },
+  { name: "Curated", href: "/admin/curated-collection", icon: Star },
+  { name: "Summary", href: "/admin/summary", icon: FileText },
+  { name: "Forum", href: "/admin/forum", icon: MessagesSquare },
+  { name: "Hero", href: "/admin/hero", icon: ImageIcon },
+  { name: "Plan", href: "/admin/plan", icon: DollarSign },
 ];
 
 export function AdminSidebar() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    window.location.href = "/login";
+  };
+
   return (
     <>
+      {/* Mobile Menu Toggle */}
       <button
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-card border border-border rounded-lg"
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white border border-gray-200 rounded-lg shadow-sm"
       >
         {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
       </button>
 
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-40 w-64 bg-sidebar border-r border-sidebar-border transition-transform duration-300 ease-in-out",
+          "fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-gray-100 transition-transform duration-300 ease-in-out",
           isMobileMenuOpen
             ? "translate-x-0"
             : "-translate-x-full lg:translate-x-0",
         )}
       >
         <div className="flex flex-col h-full">
-          <div className="flex items-center gap-2 px-6 py-6 border-b border-sidebar-border">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <Tag className="text-primary-foreground" size={18} />
-            </div>
-            <span className="text-lg font-semibold text-sidebar-accent-foreground">
-              Slyce Admin
-            </span>
+          {/* Logo Section */}
+          <div className="flex items-center gap-2 px-6 py-8">
+        
+            <img
+    src="/logo.png"
+    alt="Slyce Admin"
+    className="h-8 w-auto"
+  />
           </div>
 
-          <nav className="flex-1 px-3 py-6 space-y-1">
+          {/* Navigation Items */}
+          <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
             {navigation.map((item) => {
               const isActive = pathname === item.href;
               const Icon = item.icon;
@@ -77,36 +86,36 @@ export function AdminSidebar() {
                   href={item.href}
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={cn(
-                    "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                    "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all duration-200",
                     isActive
-                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                      : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                      ? "bg-blue-500 text-white shadow-md shadow-blue-100"
+                      : "text-gray-500 hover:bg-gray-50 hover:text-gray-900",
                   )}
                 >
-                  <Icon size={18} />
+                  <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
                   {item.name}
                 </Link>
               );
             })}
           </nav>
 
-          <div className="px-3 py-4 border-t border-sidebar-border">
+          {/* Logout Section */}
+          <div className="p-4 border-t border-gray-50">
             <button
-              onClick={() => {
-                console.log("Logout clicked");
-              }}
-              className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
+              onClick={handleLogout}
+              className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-bold text-red-500 hover:bg-red-50 transition-colors"
             >
-              <LogOut size={18} />
+              <LogOut size={20} />
               Logout
             </button>
           </div>
         </div>
       </aside>
 
+      {/* Mobile Overlay */}
       {isMobileMenuOpen && (
         <div
-          className="lg:hidden fixed inset-0 bg-background/80 backdrop-blur-sm z-30"
+          className="lg:hidden fixed inset-0 bg-black/20 backdrop-blur-sm z-30"
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}

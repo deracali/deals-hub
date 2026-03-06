@@ -40,7 +40,7 @@ export default function CuratedDealsPage(): JSX.Element {
     setError("");
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/curated-categories/get`,
+        `https://dealshub-server.onrender.com/api/curated-categories/get`,
       );
       if (!res.ok) throw new Error("Failed to fetch categories");
       const data = await res.json();
@@ -74,8 +74,8 @@ export default function CuratedDealsPage(): JSX.Element {
 
     try {
       const url = editingId
-        ? `http://localhost:5000/api/curated-categories/update/${editingId}`
-        : "http://localhost:5000/api/curated-categories/create";
+        ? `https://dealshub-server.onrender.com/api/curated-categories/update/${editingId}`
+        : "https://dealshub-server.onrender.com/api/curated-categories/create";
       const method = editingId ? "PUT" : "POST";
 
       const res = await fetch(url, {
@@ -125,7 +125,7 @@ export default function CuratedDealsPage(): JSX.Element {
     setLoading(true);
     try {
       const res = await fetch(
-        `http://localhost:5000/api/curated-categories/delete/${id}`,
+        `https://dealshub-server.onrender.com/api/curated-categories/delete/${id}`,
         {
           method: "DELETE",
         },

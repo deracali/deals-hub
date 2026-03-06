@@ -88,6 +88,7 @@ const VendorIcon = ({ brandName, businessLogo }: VendorIconProps) => {
         alt={brandName}
         width={24}
         height={24}
+        unoptimized
         className="object-contain"
       />
     </div>
@@ -210,6 +211,7 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
             src={product.image}
             alt={product.title}
             fill
+            unoptimized
             sizes="(max-width: 768px) 100vw, 33vw"
             className="object-cover cursor-pointer transition-transform duration-300 group-hover:scale-105"
             onClick={() => router.push(`/deals/${product.id}`)}
@@ -315,6 +317,7 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
                 src={brandDetails.businessLogo || "/avatar.png"}
                 alt={brandDetails.name}
                 fill
+                unoptimized
                 className="object-cover"
               />
             </div>
@@ -726,11 +729,11 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
   }, [allDeals, userPreferences]);
 
   const trendingCount = React.useMemo(() => {
-    if (!allDeals || allDeals.length === 0) return 0;
-    return allDeals.filter(
-      (deal) => Number(deal.discountPercentage || deal.discount || 0) >= 20,
+    return deals.filter(
+      (deal) =>
+        Number(deal.discountPercentage || deal.discount || 0) >= 20
     ).length;
-  }, [allDeals]);
+  }, [deals]);
 
   return (
     <div className="container mx-auto px-4 pt-4 font-sans text-slate-900 pb-8 md:pb-20">
@@ -926,7 +929,7 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
                   product={{
                     id: deal._id,
                     title: deal.title,
-                    image: deal.images?.[0],
+                    image: deal.images?.[1] || deal.images?.[0] || "/placeholder.png",
                     vendor: {
                       name: deal.brand,
                       type: "amazon",

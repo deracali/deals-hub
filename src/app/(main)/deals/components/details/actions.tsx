@@ -15,6 +15,22 @@ const DealActions = ({ deal }: { deal: any }) => {
   const [isShareMenuOpen, setIsShareMenuOpen] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
+
+  const popup = (message: string) => {
+    const div = document.createElement("div");
+    div.innerText = message;
+
+    div.className =
+      "fixed top-5 left-1/2 -translate-x-1/2 bg-black text-white text-sm px-4 py-2 rounded-lg shadow-lg z-50";
+
+    document.body.appendChild(div);
+
+    setTimeout(() => {
+      div.remove();
+    }, 2000);
+  };
+
+
   // ✅ Load user profile once
   useEffect(() => {
     const loadProfile = async () => {
@@ -47,7 +63,7 @@ const DealActions = ({ deal }: { deal: any }) => {
     const link = deal?.url || deal?.dealUrl; // ✅ support both keys
 
     if (!link) {
-      alert("No deal link available.");
+      popup("No deal link available.");
       return;
     }
 
@@ -57,7 +73,7 @@ const DealActions = ({ deal }: { deal: any }) => {
       window.open(fullUrl, "_blank", "noopener,noreferrer");
     } catch (error) {
       console.error("Failed to open link:", error);
-      alert("Unable to open this deal link.");
+      popup("Unable to open this deal link.");
     }
   };
 
@@ -87,7 +103,7 @@ const DealActions = ({ deal }: { deal: any }) => {
     const userId = getStoredUserId();
 
     if (!userId) {
-      alert("You must be registered to share deals.");
+      popup("You must be registered to share deals.");
       return;
     }
 
@@ -96,15 +112,15 @@ const DealActions = ({ deal }: { deal: any }) => {
         const profile = await fetchUserProfile(userId);
         setUserProfile(profile);
         if (profile.type === "regular") {
-          alert("Only registered vendors can share deals.");
+          popup("Only registered vendors can share deals.");
           return;
         }
       } catch {
-        alert("Error verifying user status. Please log in again.");
+        popup("Error verifying user status. Please log in again.");
         return;
       }
     } else if (userProfile.type === "regular") {
-      alert("Only registered vendors can share deals.");
+      popup("Only registered vendors can share deals.");
       return;
     }
 

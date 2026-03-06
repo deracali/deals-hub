@@ -316,7 +316,7 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
             </div>
 
             <Link
-              href="/all-stores"
+              href="/vendors"
               className="flex items-center text-blue-500 hover:text-blue-600 transition-colors whitespace-nowrap"
             >
               <span className="text-sm font-medium mr-1">See all stores</span>

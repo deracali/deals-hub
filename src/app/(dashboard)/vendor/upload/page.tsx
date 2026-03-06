@@ -40,6 +40,22 @@ export default function Home() {
 
   const [saving, setSaving] = useState(false);
 
+
+  const popup = (message: string) => {
+    const div = document.createElement("div");
+    div.innerText = message;
+
+    div.className =
+      "fixed top-5 left-1/2 -translate-x-1/2 bg-black text-white text-sm px-4 py-2 rounded-lg shadow-lg z-50";
+
+    document.body.appendChild(div);
+
+    setTimeout(() => {
+      div.remove();
+    }, 2000);
+  };
+
+
   // --- Handlers for Document Upload ---
   const handleDocDragOver = (e) => {
     e.preventDefault();
@@ -212,15 +228,15 @@ export default function Home() {
   // --- Updated Save handler ---
   const handleSaveAll = async () => {
     setSaving(true);
+
     try {
-      // We use compressImage instead of fileToDataUrl
       const cacDocumentDataUrl = await compressImage(docFile);
       const businessLogoDataUrl = logoFileObj
         ? await compressImage(logoFileObj)
         : logoFilePreview || null;
       const passportDataUrl = await compressImage(passportFileObj);
       const identityDataUrl = await compressImage(identityFileObj);
-      const bannerDataUrl = await compressImage(bannerFileObj, 1200); // Banners can be wider
+      const bannerDataUrl = await compressImage(bannerFileObj, 1200);
 
       const payload = {
         cacDocument: cacDocumentDataUrl,
@@ -230,31 +246,28 @@ export default function Home() {
         businessBanner: bannerDataUrl,
       };
 
-      // Check size before saving
       const stringified = JSON.stringify(payload);
-      const sizeInMb = (new Blob([stringified]).size / (1024 * 1024)).toFixed(
-        2,
-      );
+      const sizeInMb = (new Blob([stringified]).size / (1024 * 1024)).toFixed(2);
 
       console.log(`Payload size: ${sizeInMb} MB`);
 
       if (parseFloat(sizeInMb) > 4.5) {
-        alert("Files are still too large. Please upload smaller images.");
-        setSaving(false);
+        popup("Files are still too large. Please upload smaller images.");
         return;
       }
 
       localStorage.setItem("vendorUploads", stringified);
-
       await new Promise((r) => setTimeout(r, 400));
       router.push("/vendor/subscription");
     } catch (err) {
       console.error("❌ Error saving files:", err);
-      alert("Storage Full: Try using smaller image files.");
+      popup("Storage Full: Try using smaller image files.");
     } finally {
       setSaving(false);
     }
   };
+
+  
   return (
     // your original container preserved
     <main className="min-h-screen bg-white-100 py-4 px-2 sm:px-4 md:px-6 relative">
