@@ -465,14 +465,7 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
         <h4 className="text-[13px] font-semibold text-gray-500 mb-4 uppercase tracking-wide">
           Vendor
         </h4>
-        <div className="relative group">
-          <input
-            type="text"
-            placeholder="Search vendor's name"
-            className="w-full bg-[#f3f4f6] border-none rounded-lg py-2.5 px-4 pl-9 text-[12px] text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 transition-shadow outline-none"
-          />
-          <Search className="w-3.5 h-3.5 text-gray-400 absolute left-3 top-3" />
-        </div>
+    
       </div>
 
       {/* Top vendors */}
@@ -488,9 +481,10 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
               Top verified vendors
             </h4>
           </div>
-          <span className="text-orange-500 normal-case text-xs font-medium cursor-pointer hover:underline flex items-center">
+          <a
+            href="/vendors" className="text-orange-500 normal-case text-xs font-medium cursor-pointer hover:underline flex items-center">
             See all <ChevronRight className="w-3 h-3 ml-0.5" />
-          </span>
+          </a>
         </div>
 
         <ul className="space-y-4">

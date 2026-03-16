@@ -59,6 +59,10 @@ export function VendorSidebar() {
             : "-translate-x-full lg:translate-x-0",
         )}
       >
+
+  
+
+
         <div className="flex flex-col h-full">
           {/* Logo Section */}
           <div className="flex items-center gap-2 px-6 py-8">

@@ -574,7 +574,7 @@ const NotificationsTab = () => {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const res = await fetch(`https://dealshub-server.onrender.com/api/users/${userId}/notifications`);
+        const res = await fetch(`http://localhost:5000/api/users/${userId}/notifications`);
         if (!res.ok) throw new Error("Failed to fetch notification settings");
         const data = await res.json();
         if (data.notifications) {
@@ -616,7 +616,7 @@ const NotificationsTab = () => {
     setLoading(true);
     setMessage(null);
     try {
-      const res = await fetch(`https://dealshub-server.onrender.com/api/users/${userId}/notifications`, {
+      const res = await fetch(`http://localhost:5000/api/users/${userId}/notifications`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ notifications: settings }),
@@ -832,9 +832,9 @@ if (!vendor && !loadingVendor) {
 return (
   <div className="flex h-screen w-full bg-[#FDFDFF] font-sans text-slate-900 overflow-hidden">
     {/* 1. SIDEBAR: Fixed width and hidden on mobile */}
-    <div className="hidden md:flex md:w-64 lg:w-72 flex-shrink-0 border-r border-gray-100">
-      <VendorSidebar />
-    </div>
+  <div className="flex flex-shrink-0 border-r border-gray-100 w-auto md:w-20 lg:w-72">
+  <VendorSidebar /> {/* visible on all screens */}
+ </div>
 
     {/* 2. MAIN CONTENT AREA: Scrollable */}
     <main className="flex-1 h-screen overflow-y-auto p-6 md:p-10 pb-24 relative bg-white">

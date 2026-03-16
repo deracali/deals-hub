@@ -172,13 +172,13 @@ export default function DealsPage() {
     <div className="min-h-screen p-8 font-sans">
       {/* 1. Top Section: Stats & Chart */}
       <div className="bg-white rounded-[32px] p-8 border border-gray-100 shadow-sm mb-8">
-        <div className="flex flex-col lg:flex-row justify-between gap-8">
-          <div className="flex flex-col justify-center min-w-[250px]">
+        <div className="flex flex-col lg:flex-row justify-between gap-6 md:gap-8">
+          <div className="flex flex-col justify-center min-w-[200px]">
             <div className="flex items-center gap-2 mb-2">
               <div className="w-2 h-2 rounded-full bg-red-500" />
               <span className="text-sm font-black text-gray-900 uppercase">Total Deals</span>
             </div>
-            <h2 className="text-3xl font-black text-gray-900 mb-1">
+            <h2 className="text-2xl md:text-3xl font-black text-gray-900 mb-1">
                {totalDeals.toLocaleString()}
             </h2>
             <p className="text-xs font-bold text-green-500 flex items-center gap-1">
@@ -190,15 +190,15 @@ export default function DealsPage() {
 
           </div>
 
-          <div className="flex-1 h-[150px]">
-            <div className="flex justify-end gap-4 mb-2">
-               <div className="flex items-center gap-1 text-[10px] font-bold text-gray-400">
+          <div className="flex-1 h-[150px] md:h-[200px] overflow-x-auto">
+            <div className="flex justify-end gap-3 mb-2 flex-wrap">
+               <div className="flex items-center gap-1 text-[10px] md:text-[11px] md:text-[11px] font-bold text-gray-400">
                  <div className="w-2 h-2 rounded-full bg-[#002244]" /> Normal
                </div>
-               <div className="flex items-center gap-1 text-[10px] font-bold text-gray-400">
+               <div className="flex items-center gap-1 text-[10px] md:text-[11px] md:text-[11px] font-bold text-gray-400">
                  <div className="w-2 h-2 rounded-full bg-[#FF9500]" /> Affiliate
                </div>
-               <div className="flex items-center gap-1 text-[10px] font-bold text-gray-400">
+               <div className="flex items-center gap-1 text-[10px] md:text-[11px] md:text-[11px] font-bold text-gray-400">
                  <div className="w-2 h-2 rounded-full bg-[#007AFF]" /> Group
                </div>
             </div>
@@ -218,29 +218,30 @@ export default function DealsPage() {
       </div>
 
       {/* 2. Action Bar */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 flex-wrap">
         <div className="flex items-center gap-2">
            <div className="w-2 h-2 rounded-full bg-red-500" />
            <h3 className="text-sm font-black text-gray-900 uppercase">Manage Deals</h3>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 bg-white border border-gray-100 px-3 py-2 rounded-xl text-[10px] font-bold text-gray-400 uppercase">
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2 bg-white border border-gray-100 px-3 py-2 rounded-xl text-[10px] md:text-[11px] font-bold text-gray-400 uppercase">
             All deals <ChevronDown size={14} />
           </div>
           <div className="p-2 bg-white border border-gray-100 rounded-xl text-gray-400 cursor-pointer hover:bg-gray-50 transition-colors">
             <Search size={16} />
           </div>
-          <button className="flex items-center gap-2 bg-[#007AFF] text-white px-5 py-2.5 rounded-xl text-[10px] font-bold shadow-lg shadow-blue-100 uppercase">
+          <button className="flex items-center gap-2 bg-[#007AFF] text-white px-5 py-2.5 rounded-xl text-[10px] md:text-[11px] font-bold shadow-lg shadow-blue-100 uppercase">
             <Plus size={14} /> Post deals
           </button>
         </div>
       </div>
 
       {/* 3. Deals Table */}
-      <div className="bg-white rounded-[32px] border border-gray-100 shadow-sm overflow-hidden">
-        <table className="w-full text-left border-collapse">
+      <div className="bg-white rounded-[32px] border border-gray-100 shadow-sm w-full overflow-x-auto">
+    <div className="min-w-[700px] md:min-w-full">
+      <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="border-b border-gray-50 text-[10px] font-bold text-gray-400 uppercase">
+            <tr className="border-b border-gray-50 text-[10px] md:text-[11px] font-bold text-gray-400 uppercase">
               <th className="p-6">Product Image/Title</th>
               <th className="p-6">Description</th>
               <th className="p-6 text-right">Orig. Price</th>
@@ -264,7 +265,7 @@ export default function DealsPage() {
                 className="cursor-pointer hover:bg-gray-50 transition-colors group"
               >
                 <td className="p-6">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <div className="w-10 h-10 bg-gray-100 rounded-lg flex-shrink-0 overflow-hidden border border-gray-50">
                       {deal.images?.[0] ? (
                         <img src={deal.images[0]} alt="" className="w-full h-full object-cover" />
@@ -279,7 +280,7 @@ export default function DealsPage() {
                     </div>
                   </div>
                 </td>
-                <td className="p-6 text-[10px] font-bold text-gray-400 max-w-[200px] leading-relaxed">
+                <td className="p-6 text-[10px] md:text-[11px] font-bold text-gray-400 max-w-[200px] leading-relaxed">
                   <p className="line-clamp-2">{deal.description}</p>
                 </td>
                 <td className="p-6 text-[11px] font-black text-gray-900 text-right">
@@ -314,13 +315,13 @@ export default function DealsPage() {
           )}
           </tbody>
         </table>
-
+</div>
         {/* Functional Pagination Component */}
         <div className="p-6 flex justify-center items-center gap-4 border-t border-gray-50">
            <button
              onClick={() => handlePageChange(currentPage - 1)}
              disabled={currentPage === 1 || loading}
-             className={`flex items-center gap-1 text-[10px] font-bold transition-colors ${
+             className={`flex items-center gap-1 text-[10px] md:text-[11px] font-bold transition-colors ${
                currentPage === 1 ? 'text-gray-200 cursor-not-allowed' : 'text-gray-400 hover:text-gray-900'
              }`}
            >
@@ -337,7 +338,7 @@ export default function DealsPage() {
                  <button
                    key={pageNum}
                    onClick={() => handlePageChange(pageNum)}
-                   className={`w-8 h-8 rounded-md text-[10px] font-bold flex items-center justify-center transition-all ${
+                   className={`w-8 h-8 rounded-md text-[10px] md:text-[11px] font-bold flex items-center justify-center transition-all ${
                      currentPage === pageNum
                        ? 'bg-[#007AFF] text-white shadow-md shadow-blue-100'
                        : 'text-gray-400 hover:bg-gray-50'
@@ -352,7 +353,7 @@ export default function DealsPage() {
            <button
              onClick={() => handlePageChange(currentPage + 1)}
              disabled={currentPage === totalPages || loading}
-             className={`flex items-center gap-1 text-[10px] font-bold transition-colors ${
+             className={`flex items-center gap-1 text-[10px] md:text-[11px] font-bold transition-colors ${
                currentPage === totalPages ? 'text-gray-200 cursor-not-allowed' : 'text-gray-400 hover:text-gray-900'
              }`}
            >

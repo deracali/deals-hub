@@ -149,7 +149,9 @@ const [loading, setLoading] = useState(false);
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-20 font-sans text-slate-900">
-     <VendorSidebar />
+  <div className="flex flex-shrink-0 border-r border-gray-100 w-auto md:w-20 lg:w-72">
+  <VendorSidebar /> {/* visible on all screens */}
+</div>
 
      <div className="flex-1 pb-20 font-sans text-slate-900">
            <VendorHeader />

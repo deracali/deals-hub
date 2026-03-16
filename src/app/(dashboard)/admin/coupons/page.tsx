@@ -12,6 +12,7 @@ import {
   Tag,
   Calendar,
   Percent,
+  Palette
 } from "lucide-react";
 
 interface ApiCoupon {
@@ -22,6 +23,7 @@ interface ApiCoupon {
   title?: string;
   description?: string;
   vendor?: string;
+  category?: string;
   expiresAt: string;
   code: string;
   createdAt?: string;
@@ -43,6 +45,7 @@ interface CouponUI {
   title?: string;
   description?: string;
   vendor?: string;
+  category?: string;
 }
 
 export default function CouponsPage(): JSX.Element {
@@ -59,8 +62,8 @@ export default function CouponsPage(): JSX.Element {
     title: "",
     description: "",
     vendor: "",
-    category: "",
     isPopular: false,
+    category: "",
   });
   const [coupons, setCoupons] = useState<CouponUI[]>([]);
   const [loading, setLoading] = useState(false);
@@ -87,6 +90,7 @@ export default function CouponsPage(): JSX.Element {
       title: a.title,
       description: a.description,
       vendor: a.vendor,
+      category: a.category,
     };
   };
 
@@ -182,6 +186,7 @@ export default function CouponsPage(): JSX.Element {
       title: coupon.title || "",
       description: coupon.description || "",
       vendor: coupon.vendor || "",
+      category: coupon.category || "",
     });
     setShowAddForm(true);
   };
@@ -376,26 +381,45 @@ export default function CouponsPage(): JSX.Element {
 
                 {/* Background Color */}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">
-                    Background Color
-                  </label>
-                  <div className="flex items-center gap-3">
-                    <Input
-                      type="text"
-                      placeholder="#FDF2F8"
-                      value={formData.backgroundColor}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          backgroundColor: e.target.value,
-                        })
-                      }
-                    />
-                    <span className="text-sm text-muted-foreground">
-                      {formData.backgroundColor.toUpperCase()}
-                    </span>
-                  </div>
-                </div>
+    <label className="text-sm font-medium flex items-center gap-2">
+      <Palette size={14} /> Background Color
+    </label>
+    <div className="flex items-center gap-3">
+      {/* Visual Color Picker Swatch */}
+      <div className="relative w-10 h-10 overflow-hidden rounded-md border border-input shrink-0">
+        <input
+          type="color"
+          className="absolute inset-0 w-[150%] h-[150%] -translate-x-1/4 -translate-y-1/4 cursor-pointer"
+          value={formData.backgroundColor}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              backgroundColor: e.target.value.toUpperCase(),
+            })
+          }
+        />
+      </div>
+
+      {/* Manual Hex Input */}
+      <div className="flex-1 flex items-center gap-2">
+        <Input
+          type="text"
+          placeholder="#FDF2F8"
+          className="font-mono uppercase"
+          value={formData.backgroundColor}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              backgroundColor: e.target.value,
+            })
+          }
+        />
+        <span className="text-xs text-muted-foreground font-mono min-w-[60px]">
+          {formData.backgroundColor.toUpperCase()}
+        </span>
+      </div>
+    </div>
+  </div>
               </div>
 
               <div className="flex gap-2 justify-end">

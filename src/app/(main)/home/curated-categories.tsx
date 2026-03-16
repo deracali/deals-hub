@@ -65,10 +65,10 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
     <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
       {categories.map((category) => (
         <Link
-          key={category._id}
-          href={`/category/${category.id}`}
-          className="group flex flex-col overflow-hidden rounded-xl bg-white transition hover:shadow-md"
-        >
+  key={category._id}
+  href={`/deals/curated-deals?category=${encodeURIComponent(category.category)}&discount=${category.maxDiscount}`}
+  className="group flex flex-col overflow-hidden rounded-xl bg-white transition hover:shadow-md"
+>
           {/* Image Section */}
           <div className="relative h-40 sm:h-48 w-full overflow-hidden bg-gray-100">
             {/* Discount Badge */}

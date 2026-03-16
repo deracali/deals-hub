@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Wallet, Briefcase, Plus, ExternalLink, ChevronDown,
@@ -42,8 +43,8 @@ const [rejectComment, setRejectComment] = useState<string | null>(null);
     platformData: []
   });
  const [currentPlan, setCurrentPlan] = useState("free")
-
-
+const [sidebarOpen, setSidebarOpen] = useState(false);
+const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
  const [banks, setBanks] = useState([]);
    const [loading, setLoading] = useState(false);
    const [bankDetails, setBankDetails] = useState({ bankCode: '', accountNumber: '', bankName: '' });
@@ -52,6 +53,29 @@ const [rejectComment, setRejectComment] = useState<string | null>(null);
    const [errorMessage, setErrorMessage] = useState('');
 const [selectedAccount, setSelectedAccount] = useState(null);
 
+
+const router = useRouter();
+  const [isAuthorized, setIsAuthorized] = useState(false);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+
+    // If no user -> redirect
+    if (!storedUser) {
+      router.replace("/login");
+      return;
+    }
+
+    const user = JSON.parse(storedUser);
+
+    // Optional: check role
+    if (user.type !== "vendor") {
+      router.replace("/login");
+      return;
+    }
+
+    setIsAuthorized(true);
+  }, [router]);
 
 
 
@@ -336,6 +360,12 @@ const [selectedAccount, setSelectedAccount] = useState(null);
 
   return (
     <>
+    {!isAuthorized ? (
+     <div className="flex items-center justify-center h-screen">
+       Loading...
+     </div>
+   ) : (
+      <>
      {isVendorRejected && (
        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70">
          <div className="bg-white p-8 rounded-2xl max-w-md text-center shadow-2xl">
@@ -351,15 +381,15 @@ const [selectedAccount, setSelectedAccount] = useState(null);
          </div>
        </div>
      )}
-    <div className="flex min-h-screen bg-[#FDFDFF] font-sans text-slate-900">
+     <div className="flex h-screen w-full bg-[#FDFDFF] font-sans text-slate-900 overflow-hidden">
+       {/* DESKTOP SIDEBAR */}
+      <div className="flex flex-shrink-0 border-r border-gray-100 w-auto md:w-20 lg:w-72">
+     <VendorSidebar /> {/* visible on all screens */}
+   </div>
 
-        {/* 2. SIDEBAR: Placed first in the DOM for proper layout flow */}
-        <div className="w-64 flex-shrink-0">
-    <VendorSidebar />
-  </div>
 
-        {/* 3. MAIN CONTENT: Use flex-1 to take up remaining space and overflow-y-auto for scrolling */}
-        <main className="flex-1 h-screen overflow-y-auto p-4 md:p-8 pb-24 relative">
+ {/* MAIN CONTENT */}
+ <main className="flex-1 overflow-y-auto relative custom-scrollbar">
           <VendorHeader />
       {/* Plan Alert Banner */}
       <div className={`max-w-7xl mx-auto mb-6 rounded-2xl p-4 flex items-start gap-3 border ${
@@ -720,8 +750,11 @@ onClick={(e) => e.stopPropagation()}
           </div>
         </div>
       </div>
+
   </main>
     </div>
+    </>
+   )}
     </>
   );
 }

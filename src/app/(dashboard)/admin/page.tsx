@@ -234,7 +234,7 @@ const usersPercentage =
       </div>
 
       {/* TOP SUMMARY CARDS */}
-      <div className="grid grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
       <SummaryCard
   title="Users"
   icon={<UsersIcon size={18} className="text-orange-500" />}
@@ -281,7 +281,7 @@ isEmpty={isEmpty}
 
       <div className="grid grid-cols-12 gap-6">
         {/* LEFT COLUMN */}
-        <div className="col-span-8 space-y-6">
+        <div className="col-span-12 lg:col-span-8 space-y-6">
           <SectionCard
             title="Deals"
             icon={<LayoutGrid className="text-red-500" size={18} />}
@@ -319,7 +319,7 @@ isEmpty={isEmpty}
         </div>
 
         {/* RIGHT COLUMN */}
-        <div className="col-span-4 space-y-6">
+        <div className="col-span-12 lg:col-span-4 space-y-6">
           <SectionCard title="Revenues" icon={<Wallet className="text-green-500" size={18} />} filter="Monthly">
             <div className="flex flex-col items-center">
               <div className="w-full mb-4">
@@ -588,7 +588,8 @@ function DealsTable({ deals = [], loading }: any) {
   }
 
   return (
-    <table className="w-full text-left">
+    <div className="overflow-x-auto">
+  <table className="min-w-full text-left">
       <thead>
         <tr className="text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-50">
           <th className="py-4 px-4 text-left align-middle">Product image/Description</th>
@@ -673,6 +674,7 @@ function DealsTable({ deals = [], loading }: any) {
         ))}
       </tbody>
     </table>
+    </div>
   );
 }
 
@@ -690,7 +692,8 @@ function VendorsTable({ vendors = [], loading }: any) {
   }
 
   return (
-    <table className="w-full text-left">
+    <div className="overflow-x-auto">
+  <table className="min-w-full text-left">
       <thead>
         <tr className="text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-50">
           <th className="py-4 px-4">Vendor image/Name</th>
@@ -756,6 +759,7 @@ function VendorsTable({ vendors = [], loading }: any) {
         ))}
       </tbody>
     </table>
+    </div>
   );
 }
 
@@ -773,7 +777,8 @@ function UsersTable({ users = [], loading }: any) {
   }
 
   return (
-    <table className="w-full text-left">
+    <div className="overflow-x-auto">
+  <table className="min-w-full text-left">
       <thead>
         <tr className="text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-50">
           <th className="py-4 px-4">User</th>
@@ -831,6 +836,7 @@ function UsersTable({ users = [], loading }: any) {
         })}
       </tbody>
     </table>
+    </div>
   );
 }
 

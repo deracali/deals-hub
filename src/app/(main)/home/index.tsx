@@ -258,7 +258,7 @@ const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
             {/* Right Side: See All Deals Link */}
             {/* Target the link to a general deals or collections page */}
             <Link
-              href="/all-deals"
+              href="/deals/all-deals"
               className="flex items-center text-blue-500 hover:text-blue-600 transition-colors whitespace-nowrap"
             >
               <span className="text-sm font-medium mr-1">See all deals</span>

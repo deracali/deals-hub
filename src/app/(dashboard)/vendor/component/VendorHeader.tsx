@@ -166,23 +166,13 @@ export function VendorHeader() {
   }, []);
 
   return (
-    <header className="w-full h-20 bg-white border-b border-gray-50 flex items-center justify-between px-8 sticky top-0 z-50">
+    <header className="w-full h-20 bg-white border-b border-gray-50 flex items-center justify-between px-8 top-0">
       <div className="flex items-center gap-2 min-w-[150px]">
         <Link href="/" className="flex items-center">
           <Image src="/logo-black.png" alt="Logo" width={113} height={40} priority />
         </Link>
       </div>
 
-      <div className="flex-1 max-w-2xl px-10">
-        <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-          <input
-            type="text"
-            placeholder="Search here"
-            className="w-full bg-[#F9FAFB] border-none rounded-xl py-3 pl-11 pr-4 text-[13px] outline-none placeholder:text-gray-400 text-gray-700"
-          />
-        </div>
-      </div>
 
       <div className="flex items-center gap-6">
         <div className="relative" ref={dropdownRef}>
@@ -268,7 +258,7 @@ export function VendorHeader() {
           )}
         </div>
 
-        <div className="flex items-center gap-3 pl-2 cursor-pointer group">
+      <div className="hidden md:flex items-center gap-3 pl-2 cursor-pointer group">
           <div className="text-right">
             <p className="text-[11px] text-gray-400 font-medium leading-tight">{greeting}</p>
             <p className="text-[13px] font-bold text-gray-900 leading-tight">

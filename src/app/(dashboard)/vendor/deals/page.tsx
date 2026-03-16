@@ -172,9 +172,9 @@ export default function DealsPage() {
 return (
 <div className="flex h-screen w-full bg-[#FDFDFF] font-sans text-slate-900 overflow-hidden">
   {/* 1. SIDEBAR: Fixed width, hidden on mobile */}
-  <div className="hidden md:flex md:w-64 lg:w-72 flex-shrink-0 border-r border-gray-100">
-    <VendorSidebar />
-  </div>
+<div className="flex flex-shrink-0 border-r border-gray-100 w-auto md:w-20 lg:w-72">
+ <VendorSidebar /> {/* visible on all screens */}
+ </div>
 
   {/* 2. MAIN CONTENT AREA: Scrollable */}
   <main className="flex-1 h-screen overflow-y-auto p-6 md:p-10 pb-24 relative bg-white">
@@ -275,10 +275,7 @@ return (
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </div>
         </div>
-        <button className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2.5 px-5 rounded-xl inline-flex items-center text-sm shadow-md transition-all active:scale-95">
-          <svg className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-          Create new deal
-        </button>
+
       </div>
     </div>
 

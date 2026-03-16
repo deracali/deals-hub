@@ -147,9 +147,9 @@ export default function OrdersPage() {
   return (
     <div className="flex h-screen w-full bg-[#FDFDFF] font-sans text-slate-900 overflow-hidden">
       {/* 1. SIDEBAR: Fixed width, hidden on mobile */}
-      <div className="hidden md:flex md:w-64 lg:w-72 flex-shrink-0 border-r border-gray-100">
-        <VendorSidebar />
-      </div>
+    <div className="flex flex-shrink-0 border-r border-gray-100 w-auto md:w-20 lg:w-72">
+    <VendorSidebar /> {/* visible on all screens */}
+   </div>
 
       {/* 2. MAIN CONTENT AREA: Scrollable */}
       <main className="flex-1 h-screen overflow-y-auto p-6 md:p-10 pb-24 relative bg-white">

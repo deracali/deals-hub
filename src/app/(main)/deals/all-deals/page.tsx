@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import Header from "@/components/general/header";
-import HeroSection from "../../home/hero";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
@@ -188,7 +187,6 @@ const MarketingHomeContent = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <HeroSection />
       <section className="py-12 bg-muted/10">
         <div className="w-full bg-red-600 text-white py-4 mb-6">
           <div className="container mx-auto px-4 space-y-1">

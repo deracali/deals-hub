@@ -32,6 +32,7 @@ export default function CuratedDealsPage(): JSX.Element {
     dealsCount: "",
     maxDiscount: "",
     color: "bg-blue-600",
+    category: "",
   });
 
   // Fetch categories
@@ -70,12 +71,13 @@ export default function CuratedDealsPage(): JSX.Element {
       dealsCount: Number(formData.dealsCount),
       maxDiscount: Number(formData.maxDiscount),
       color: formData.color,
+       category: formData.category,
     };
 
     try {
       const url = editingId
-        ? `https://dealshub-server.onrender.com/api/curated-categories/update/${editingId}`
-        : "https://dealshub-server.onrender.com/api/curated-categories/create";
+        ? `http://localhost:5000/api/curated-categories/update/${editingId}`
+        : "http://localhost:5000/api/curated-categories/create";
       const method = editingId ? "PUT" : "POST";
 
       const res = await fetch(url, {
@@ -114,6 +116,7 @@ export default function CuratedDealsPage(): JSX.Element {
       dealsCount: String(category.dealsCount),
       maxDiscount: String(category.maxDiscount),
       color: category.color,
+       category: category.category || "",
     });
     setShowForm(true);
   };
@@ -229,7 +232,23 @@ export default function CuratedDealsPage(): JSX.Element {
                   required
                 />
               </div>
-
+              <div>
+                <label className="text-sm font-medium">Category</label>
+                <select
+                  value={formData.category}
+                  onChange={(e) =>
+                    setFormData({ ...formData, category: e.target.value })
+                  }
+                  required
+                  className="w-full px-3 py-2 border border-input rounded-lg"
+                >
+                  <option value="">Select Category</option>
+                  <option value="Electronics">Electronics</option>
+                  <option value="Fashion">Fashion</option>
+                  <option value="Food">Food</option>
+                  <option value="Travel">Travel</option>
+                </select>
+              </div>
               <div>
                 <label className="text-sm font-medium">Color Class</label>
                 <Input
